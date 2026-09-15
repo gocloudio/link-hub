@@ -21,9 +21,18 @@ import (
 var migrations embed.FS
 var ErrNotFound = errors.New("记录不存在或已被删除")
 var ErrConflict = errors.New("卡片已被其他管理员修改，请刷新后重新编辑")
+var ErrForbidden = errors.New("没有维护此卡片的权限")
 var ErrInUse = errors.New("该分类仍有关联卡片，请先调整卡片分类")
 
+type Actor struct {
+	ID      string
+	IsAdmin bool
+}
+
 type Card struct {
+	IsPrivate                  bool
+	OwnerID                    string
+	SharedUserIDs              []string
 	ID, Name, Description, URL string
 	CategoryIDs                []string
 	CreatedAt, UpdatedAt       time.Time
@@ -114,8 +123,8 @@ func (s *Store) transaction(ctx context.Context, fn func(pgx.Tx) error) error {
 	return tx.Commit(ctx)
 }
 
-func (s *Store) ListCategories(ctx context.Context) ([]Category, error) {
-	rows, err := s.Pool.Query(ctx, `SELECT c.id::text,c.name,count(cc.card_id)::integer FROM categories c LEFT JOIN card_categories cc ON cc.category_id=c.id GROUP BY c.id`)
+func (s *Store) ListCategories(ctx context.Context, actor Actor) ([]Category, error) {
+	rows, err := s.Pool.Query(ctx, `SELECT c.id::text,c.name,count(visible.id)::integer FROM categories c LEFT JOIN card_categories cc ON cc.category_id=c.id LEFT JOIN cards visible ON visible.id=cc.card_id AND ($2::boolean OR NOT visible.is_private OR visible.owner_id=$1 OR EXISTS(SELECT 1 FROM card_shares sh WHERE sh.card_id=visible.id AND sh.user_id=$1)) GROUP BY c.id`, actor.ID, actor.IsAdmin)
 	if err != nil {
 		return nil, err
 	}
@@ -142,21 +151,21 @@ func (s *Store) ListCategories(ctx context.Context) ([]Category, error) {
 	return result, nil
 }
 
-const cardColumns = `c.id::text,c.name,c.description_markdown,c.url,c.created_at,c.updated_at,ARRAY(SELECT cc.category_id::text FROM card_categories cc WHERE cc.card_id=c.id ORDER BY cc.category_id)`
+const cardColumns = `c.id::text,c.name,c.description_markdown,c.url,c.created_at,c.updated_at,ARRAY(SELECT cc.category_id::text FROM card_categories cc WHERE cc.card_id=c.id ORDER BY cc.category_id),c.is_private,COALESCE(c.owner_id::text,''),ARRAY(SELECT sh.user_id::text FROM card_shares sh WHERE sh.card_id=c.id ORDER BY sh.user_id)`
 
 func scanCard(row pgx.Row) (Card, error) {
 	var c Card
-	err := row.Scan(&c.ID, &c.Name, &c.Description, &c.URL, &c.CreatedAt, &c.UpdatedAt, &c.CategoryIDs)
+	err := row.Scan(&c.ID, &c.Name, &c.Description, &c.URL, &c.CreatedAt, &c.UpdatedAt, &c.CategoryIDs, &c.IsPrivate, &c.OwnerID, &c.SharedUserIDs)
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = ErrNotFound
 	}
 	return c, err
 }
-func (s *Store) ListCards(ctx context.Context, categoryID string) ([]Card, error) {
-	query := `SELECT ` + cardColumns + ` FROM cards c`
-	args := []any{}
+func (s *Store) ListCards(ctx context.Context, categoryID string, actor Actor) ([]Card, error) {
+	query := `SELECT ` + cardColumns + ` FROM cards c WHERE ` + visibleCardSQL
+	args := []any{actor.ID, actor.IsAdmin}
 	if categoryID != "" {
-		query += ` WHERE EXISTS (SELECT 1 FROM card_categories cc WHERE cc.card_id=c.id AND cc.category_id=$1)`
+		query += ` AND EXISTS (SELECT 1 FROM card_categories cc WHERE cc.card_id=c.id AND cc.category_id=$3)`
 		args = append(args, categoryID)
 	}
 	query += ` ORDER BY c.created_at DESC,c.id DESC`
@@ -175,32 +184,55 @@ func (s *Store) ListCards(ctx context.Context, categoryID string) ([]Card, error
 	}
 	return result, rows.Err()
 }
-func (s *Store) GetCard(ctx context.Context, id string) (Card, error) {
-	return scanCard(s.Pool.QueryRow(ctx, `SELECT `+cardColumns+` FROM cards c WHERE c.id=$1`, id))
+func (s *Store) GetCard(ctx context.Context, id string, actor Actor) (Card, error) {
+	return scanCard(s.Pool.QueryRow(ctx, `SELECT `+cardColumns+` FROM cards c WHERE c.id=$3 AND `+visibleCardSQL, actor.ID, actor.IsAdmin, id))
 }
 
-func (s *Store) SaveCard(ctx context.Context, c Card, expected *time.Time) (Card, error) {
+func (s *Store) SaveCard(ctx context.Context, c Card, expected *time.Time, actor Actor) (Card, error) {
 	creating := c.ID == ""
 	if creating {
 		c.ID = uuid.NewString()
+		c.OwnerID = actor.ID
+	}
+	if !c.IsPrivate && !actor.IsAdmin {
+		return c, ErrForbidden
 	}
 	err := s.transaction(ctx, func(tx pgx.Tx) error {
 		if creating {
-			if _, err := tx.Exec(ctx, `INSERT INTO cards(id,name,description_markdown,url) VALUES($1,$2,$3,$4)`, c.ID, c.Name, c.Description, c.URL); err != nil {
+			if _, err := tx.Exec(ctx, `INSERT INTO cards(id,name,description_markdown,url,is_private,owner_id) VALUES($1,$2,$3,$4,$5,$6)`, c.ID, c.Name, c.Description, c.URL, c.IsPrivate, c.OwnerID); err != nil {
 				return err
 			}
 		} else {
 			var current time.Time
-			if err := tx.QueryRow(ctx, `SELECT updated_at FROM cards WHERE id=$1 FOR UPDATE`, c.ID).Scan(&current); errors.Is(err, pgx.ErrNoRows) {
+			var private bool
+			var owner string
+			if err := tx.QueryRow(ctx, `SELECT updated_at,is_private,COALESCE(owner_id::text,'') FROM cards WHERE id=$1 FOR UPDATE`, c.ID).Scan(&current, &private, &owner); errors.Is(err, pgx.ErrNoRows) {
 				return ErrNotFound
 			} else if err != nil {
 				return err
 			}
+			if !actor.IsAdmin && (!private || owner != actor.ID) {
+				return ErrForbidden
+			}
+			if owner == "" && c.IsPrivate {
+				owner = actor.ID
+			}
+			c.OwnerID = owner
 			if expected == nil || !current.Equal(*expected) {
 				return ErrConflict
 			}
-			if _, err := tx.Exec(ctx, `UPDATE cards SET name=$2,description_markdown=$3,url=$4,updated_at=clock_timestamp() WHERE id=$1`, c.ID, c.Name, c.Description, c.URL); err != nil {
+			if _, err := tx.Exec(ctx, `UPDATE cards SET name=$2,description_markdown=$3,url=$4,is_private=$5,owner_id=NULLIF($6,'')::uuid,updated_at=clock_timestamp() WHERE id=$1`, c.ID, c.Name, c.Description, c.URL, c.IsPrivate, c.OwnerID); err != nil {
 				return err
+			}
+		}
+		if _, err := tx.Exec(ctx, `DELETE FROM card_shares WHERE card_id=$1`, c.ID); err != nil {
+			return err
+		}
+		if c.IsPrivate {
+			for _, userID := range c.SharedUserIDs {
+				if _, err := tx.Exec(ctx, `INSERT INTO card_shares(card_id,user_id) VALUES($1,$2)`, c.ID, userID); err != nil {
+					return err
+				}
 			}
 		}
 		if _, err := tx.Exec(ctx, `DELETE FROM card_categories WHERE card_id=$1`, c.ID); err != nil {
@@ -217,9 +249,9 @@ func (s *Store) SaveCard(ctx context.Context, c Card, expected *time.Time) (Card
 	})
 	return c, err
 }
-func (s *Store) DeleteCard(ctx context.Context, id string) error {
+func (s *Store) DeleteCard(ctx context.Context, id string, actor Actor) error {
 	return s.transaction(ctx, func(tx pgx.Tx) error {
-		r, err := tx.Exec(ctx, `DELETE FROM cards WHERE id=$1`, id)
+		r, err := tx.Exec(ctx, `DELETE FROM cards WHERE id=$1 AND ((is_private AND owner_id=$2) OR $3)`, id, actor.ID, actor.IsAdmin)
 		if err == nil && r.RowsAffected() == 0 {
 			return ErrNotFound
 		}

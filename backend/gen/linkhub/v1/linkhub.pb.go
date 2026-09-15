@@ -91,6 +91,10 @@ type Card struct {
 	CategoryIds         []string               `protobuf:"bytes,5,rep,name=category_ids,json=categoryIds,proto3" json:"category_ids,omitempty"`
 	CreatedAt           *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt           *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	IsPrivate           bool                   `protobuf:"varint,8,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
+	OwnerId             string                 `protobuf:"bytes,9,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
+	SharedUserIds       []string               `protobuf:"bytes,10,rep,name=shared_user_ids,json=sharedUserIds,proto3" json:"shared_user_ids,omitempty"`
+	CanEdit             bool                   `protobuf:"varint,11,opt,name=can_edit,json=canEdit,proto3" json:"can_edit,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -174,12 +178,42 @@ func (x *Card) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Card) GetIsPrivate() bool {
+	if x != nil {
+		return x.IsPrivate
+	}
+	return false
+}
+
+func (x *Card) GetOwnerId() string {
+	if x != nil {
+		return x.OwnerId
+	}
+	return ""
+}
+
+func (x *Card) GetSharedUserIds() []string {
+	if x != nil {
+		return x.SharedUserIds
+	}
+	return nil
+}
+
+func (x *Card) GetCanEdit() bool {
+	if x != nil {
+		return x.CanEdit
+	}
+	return false
+}
+
 type CardInput struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	Name                string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	DescriptionMarkdown string                 `protobuf:"bytes,2,opt,name=description_markdown,json=descriptionMarkdown,proto3" json:"description_markdown,omitempty"`
 	Url                 string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
 	CategoryIds         []string               `protobuf:"bytes,4,rep,name=category_ids,json=categoryIds,proto3" json:"category_ids,omitempty"`
+	IsPrivate           bool                   `protobuf:"varint,5,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
+	SharedUserIds       []string               `protobuf:"bytes,6,rep,name=shared_user_ids,json=sharedUserIds,proto3" json:"shared_user_ids,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -238,6 +272,20 @@ func (x *CardInput) GetUrl() string {
 func (x *CardInput) GetCategoryIds() []string {
 	if x != nil {
 		return x.CategoryIds
+	}
+	return nil
+}
+
+func (x *CardInput) GetIsPrivate() bool {
+	if x != nil {
+		return x.IsPrivate
+	}
+	return false
+}
+
+func (x *CardInput) GetSharedUserIds() []string {
+	if x != nil {
+		return x.SharedUserIds
 	}
 	return nil
 }
@@ -534,6 +582,402 @@ func (*GetMeRequest) Descriptor() ([]byte, []int) {
 	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{9}
 }
 
+type GetCardPreferencesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCardPreferencesRequest) Reset() {
+	*x = GetCardPreferencesRequest{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCardPreferencesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCardPreferencesRequest) ProtoMessage() {}
+
+func (x *GetCardPreferencesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCardPreferencesRequest.ProtoReflect.Descriptor instead.
+func (*GetCardPreferencesRequest) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{10}
+}
+
+type GetCardPreferencesResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	FavoriteCardIds []string               `protobuf:"bytes,1,rep,name=favorite_card_ids,json=favoriteCardIds,proto3" json:"favorite_card_ids,omitempty"`
+	OrderedCardIds  []string               `protobuf:"bytes,2,rep,name=ordered_card_ids,json=orderedCardIds,proto3" json:"ordered_card_ids,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetCardPreferencesResponse) Reset() {
+	*x = GetCardPreferencesResponse{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCardPreferencesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCardPreferencesResponse) ProtoMessage() {}
+
+func (x *GetCardPreferencesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCardPreferencesResponse.ProtoReflect.Descriptor instead.
+func (*GetCardPreferencesResponse) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetCardPreferencesResponse) GetFavoriteCardIds() []string {
+	if x != nil {
+		return x.FavoriteCardIds
+	}
+	return nil
+}
+
+func (x *GetCardPreferencesResponse) GetOrderedCardIds() []string {
+	if x != nil {
+		return x.OrderedCardIds
+	}
+	return nil
+}
+
+type SetCardFavoriteRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
+	Favorite      bool                   `protobuf:"varint,2,opt,name=favorite,proto3" json:"favorite,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetCardFavoriteRequest) Reset() {
+	*x = SetCardFavoriteRequest{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetCardFavoriteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetCardFavoriteRequest) ProtoMessage() {}
+
+func (x *SetCardFavoriteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetCardFavoriteRequest.ProtoReflect.Descriptor instead.
+func (*SetCardFavoriteRequest) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SetCardFavoriteRequest) GetCardId() string {
+	if x != nil {
+		return x.CardId
+	}
+	return ""
+}
+
+func (x *SetCardFavoriteRequest) GetFavorite() bool {
+	if x != nil {
+		return x.Favorite
+	}
+	return false
+}
+
+type SetCardFavoriteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetCardFavoriteResponse) Reset() {
+	*x = SetCardFavoriteResponse{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetCardFavoriteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetCardFavoriteResponse) ProtoMessage() {}
+
+func (x *SetCardFavoriteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetCardFavoriteResponse.ProtoReflect.Descriptor instead.
+func (*SetCardFavoriteResponse) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{13}
+}
+
+type SaveCardOrderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CardIds       []string               `protobuf:"bytes,1,rep,name=card_ids,json=cardIds,proto3" json:"card_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveCardOrderRequest) Reset() {
+	*x = SaveCardOrderRequest{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveCardOrderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveCardOrderRequest) ProtoMessage() {}
+
+func (x *SaveCardOrderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveCardOrderRequest.ProtoReflect.Descriptor instead.
+func (*SaveCardOrderRequest) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *SaveCardOrderRequest) GetCardIds() []string {
+	if x != nil {
+		return x.CardIds
+	}
+	return nil
+}
+
+type SaveCardOrderResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveCardOrderResponse) Reset() {
+	*x = SaveCardOrderResponse{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveCardOrderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveCardOrderResponse) ProtoMessage() {}
+
+func (x *SaveCardOrderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveCardOrderResponse.ProtoReflect.Descriptor instead.
+func (*SaveCardOrderResponse) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{15}
+}
+
+type Member struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Member) Reset() {
+	*x = Member{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Member) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Member) ProtoMessage() {}
+
+func (x *Member) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Member.ProtoReflect.Descriptor instead.
+func (*Member) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *Member) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Member) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Member) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+type ListMembersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMembersRequest) Reset() {
+	*x = ListMembersRequest{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMembersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMembersRequest) ProtoMessage() {}
+
+func (x *ListMembersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMembersRequest.ProtoReflect.Descriptor instead.
+func (*ListMembersRequest) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{17}
+}
+
+type ListMembersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Members       []*Member              `protobuf:"bytes,1,rep,name=members,proto3" json:"members,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMembersResponse) Reset() {
+	*x = ListMembersResponse{}
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMembersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMembersResponse) ProtoMessage() {}
+
+func (x *ListMembersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMembersResponse.ProtoReflect.Descriptor instead.
+func (*ListMembersResponse) Descriptor() ([]byte, []int) {
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ListMembersResponse) GetMembers() []*Member {
+	if x != nil {
+		return x.Members
+	}
+	return nil
+}
+
 type GetMeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -546,7 +990,7 @@ type GetMeResponse struct {
 
 func (x *GetMeResponse) Reset() {
 	*x = GetMeResponse{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[10]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -558,7 +1002,7 @@ func (x *GetMeResponse) String() string {
 func (*GetMeResponse) ProtoMessage() {}
 
 func (x *GetMeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[10]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -571,7 +1015,7 @@ func (x *GetMeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMeResponse.ProtoReflect.Descriptor instead.
 func (*GetMeResponse) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{10}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetMeResponse) GetId() string {
@@ -611,7 +1055,7 @@ type CreateCardRequest struct {
 
 func (x *CreateCardRequest) Reset() {
 	*x = CreateCardRequest{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[11]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -623,7 +1067,7 @@ func (x *CreateCardRequest) String() string {
 func (*CreateCardRequest) ProtoMessage() {}
 
 func (x *CreateCardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[11]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -636,7 +1080,7 @@ func (x *CreateCardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCardRequest.ProtoReflect.Descriptor instead.
 func (*CreateCardRequest) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{11}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CreateCardRequest) GetCard() *CardInput {
@@ -655,7 +1099,7 @@ type CreateCardResponse struct {
 
 func (x *CreateCardResponse) Reset() {
 	*x = CreateCardResponse{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[12]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -667,7 +1111,7 @@ func (x *CreateCardResponse) String() string {
 func (*CreateCardResponse) ProtoMessage() {}
 
 func (x *CreateCardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[12]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -680,7 +1124,7 @@ func (x *CreateCardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCardResponse.ProtoReflect.Descriptor instead.
 func (*CreateCardResponse) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{12}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CreateCardResponse) GetCard() *Card {
@@ -701,7 +1145,7 @@ type UpdateCardRequest struct {
 
 func (x *UpdateCardRequest) Reset() {
 	*x = UpdateCardRequest{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[13]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -713,7 +1157,7 @@ func (x *UpdateCardRequest) String() string {
 func (*UpdateCardRequest) ProtoMessage() {}
 
 func (x *UpdateCardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[13]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -726,7 +1170,7 @@ func (x *UpdateCardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCardRequest.ProtoReflect.Descriptor instead.
 func (*UpdateCardRequest) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{13}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpdateCardRequest) GetId() string {
@@ -759,7 +1203,7 @@ type UpdateCardResponse struct {
 
 func (x *UpdateCardResponse) Reset() {
 	*x = UpdateCardResponse{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[14]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -771,7 +1215,7 @@ func (x *UpdateCardResponse) String() string {
 func (*UpdateCardResponse) ProtoMessage() {}
 
 func (x *UpdateCardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[14]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -784,7 +1228,7 @@ func (x *UpdateCardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCardResponse.ProtoReflect.Descriptor instead.
 func (*UpdateCardResponse) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{14}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *UpdateCardResponse) GetCard() *Card {
@@ -803,7 +1247,7 @@ type DeleteCardRequest struct {
 
 func (x *DeleteCardRequest) Reset() {
 	*x = DeleteCardRequest{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[15]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -815,7 +1259,7 @@ func (x *DeleteCardRequest) String() string {
 func (*DeleteCardRequest) ProtoMessage() {}
 
 func (x *DeleteCardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[15]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -828,7 +1272,7 @@ func (x *DeleteCardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCardRequest.ProtoReflect.Descriptor instead.
 func (*DeleteCardRequest) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{15}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *DeleteCardRequest) GetId() string {
@@ -846,7 +1290,7 @@ type DeleteCardResponse struct {
 
 func (x *DeleteCardResponse) Reset() {
 	*x = DeleteCardResponse{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[16]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -858,7 +1302,7 @@ func (x *DeleteCardResponse) String() string {
 func (*DeleteCardResponse) ProtoMessage() {}
 
 func (x *DeleteCardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[16]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -871,7 +1315,7 @@ func (x *DeleteCardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCardResponse.ProtoReflect.Descriptor instead.
 func (*DeleteCardResponse) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{16}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{25}
 }
 
 type CreateCategoryRequest struct {
@@ -883,7 +1327,7 @@ type CreateCategoryRequest struct {
 
 func (x *CreateCategoryRequest) Reset() {
 	*x = CreateCategoryRequest{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[17]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -895,7 +1339,7 @@ func (x *CreateCategoryRequest) String() string {
 func (*CreateCategoryRequest) ProtoMessage() {}
 
 func (x *CreateCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[17]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -908,7 +1352,7 @@ func (x *CreateCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCategoryRequest.ProtoReflect.Descriptor instead.
 func (*CreateCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{17}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *CreateCategoryRequest) GetName() string {
@@ -927,7 +1371,7 @@ type CreateCategoryResponse struct {
 
 func (x *CreateCategoryResponse) Reset() {
 	*x = CreateCategoryResponse{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[18]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -939,7 +1383,7 @@ func (x *CreateCategoryResponse) String() string {
 func (*CreateCategoryResponse) ProtoMessage() {}
 
 func (x *CreateCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[18]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -952,7 +1396,7 @@ func (x *CreateCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCategoryResponse.ProtoReflect.Descriptor instead.
 func (*CreateCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{18}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *CreateCategoryResponse) GetCategory() *Category {
@@ -972,7 +1416,7 @@ type UpdateCategoryRequest struct {
 
 func (x *UpdateCategoryRequest) Reset() {
 	*x = UpdateCategoryRequest{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[19]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -984,7 +1428,7 @@ func (x *UpdateCategoryRequest) String() string {
 func (*UpdateCategoryRequest) ProtoMessage() {}
 
 func (x *UpdateCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[19]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -997,7 +1441,7 @@ func (x *UpdateCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCategoryRequest.ProtoReflect.Descriptor instead.
 func (*UpdateCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{19}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *UpdateCategoryRequest) GetId() string {
@@ -1023,7 +1467,7 @@ type UpdateCategoryResponse struct {
 
 func (x *UpdateCategoryResponse) Reset() {
 	*x = UpdateCategoryResponse{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[20]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1035,7 +1479,7 @@ func (x *UpdateCategoryResponse) String() string {
 func (*UpdateCategoryResponse) ProtoMessage() {}
 
 func (x *UpdateCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[20]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1048,7 +1492,7 @@ func (x *UpdateCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCategoryResponse.ProtoReflect.Descriptor instead.
 func (*UpdateCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{20}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *UpdateCategoryResponse) GetCategory() *Category {
@@ -1067,7 +1511,7 @@ type DeleteCategoryRequest struct {
 
 func (x *DeleteCategoryRequest) Reset() {
 	*x = DeleteCategoryRequest{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[21]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1079,7 +1523,7 @@ func (x *DeleteCategoryRequest) String() string {
 func (*DeleteCategoryRequest) ProtoMessage() {}
 
 func (x *DeleteCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[21]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1092,7 +1536,7 @@ func (x *DeleteCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCategoryRequest.ProtoReflect.Descriptor instead.
 func (*DeleteCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{21}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *DeleteCategoryRequest) GetId() string {
@@ -1110,7 +1554,7 @@ type DeleteCategoryResponse struct {
 
 func (x *DeleteCategoryResponse) Reset() {
 	*x = DeleteCategoryResponse{}
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[22]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1122,7 +1566,7 @@ func (x *DeleteCategoryResponse) String() string {
 func (*DeleteCategoryResponse) ProtoMessage() {}
 
 func (x *DeleteCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_linkhub_v1_linkhub_proto_msgTypes[22]
+	mi := &file_linkhub_v1_linkhub_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1135,7 +1579,7 @@ func (x *DeleteCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCategoryResponse.ProtoReflect.Descriptor instead.
 func (*DeleteCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{22}
+	return file_linkhub_v1_linkhub_proto_rawDescGZIP(), []int{31}
 }
 
 var File_linkhub_v1_linkhub_proto protoreflect.FileDescriptor
@@ -1148,7 +1592,7 @@ const file_linkhub_v1_linkhub_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +
-	"card_count\x18\x03 \x01(\x05R\tcardCount\"\x88\x02\n" +
+	"card_count\x18\x03 \x01(\x05R\tcardCount\"\x85\x03\n" +
 	"\x04Card\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x121\n" +
@@ -1158,12 +1602,21 @@ const file_linkhub_v1_linkhub_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x87\x01\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1d\n" +
+	"\n" +
+	"is_private\x18\b \x01(\bR\tisPrivate\x12\x19\n" +
+	"\bowner_id\x18\t \x01(\tR\aownerId\x12&\n" +
+	"\x0fshared_user_ids\x18\n" +
+	" \x03(\tR\rsharedUserIds\x12\x19\n" +
+	"\bcan_edit\x18\v \x01(\bR\acanEdit\"\xce\x01\n" +
 	"\tCardInput\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x121\n" +
 	"\x14description_markdown\x18\x02 \x01(\tR\x13descriptionMarkdown\x12\x10\n" +
 	"\x03url\x18\x03 \x01(\tR\x03url\x12!\n" +
-	"\fcategory_ids\x18\x04 \x03(\tR\vcategoryIds\"\x17\n" +
+	"\fcategory_ids\x18\x04 \x03(\tR\vcategoryIds\x12\x1d\n" +
+	"\n" +
+	"is_private\x18\x05 \x01(\bR\tisPrivate\x12&\n" +
+	"\x0fshared_user_ids\x18\x06 \x03(\tR\rsharedUserIds\"\x17\n" +
 	"\x15ListCategoriesRequest\"N\n" +
 	"\x16ListCategoriesResponse\x124\n" +
 	"\n" +
@@ -1178,7 +1631,25 @@ const file_linkhub_v1_linkhub_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"7\n" +
 	"\x0fGetCardResponse\x12$\n" +
 	"\x04card\x18\x01 \x01(\v2\x10.linkhub.v1.CardR\x04card\"\x0e\n" +
-	"\fGetMeRequest\"j\n" +
+	"\fGetMeRequest\"\x1b\n" +
+	"\x19GetCardPreferencesRequest\"r\n" +
+	"\x1aGetCardPreferencesResponse\x12*\n" +
+	"\x11favorite_card_ids\x18\x01 \x03(\tR\x0ffavoriteCardIds\x12(\n" +
+	"\x10ordered_card_ids\x18\x02 \x03(\tR\x0eorderedCardIds\"M\n" +
+	"\x16SetCardFavoriteRequest\x12\x17\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1a\n" +
+	"\bfavorite\x18\x02 \x01(\bR\bfavorite\"\x19\n" +
+	"\x17SetCardFavoriteResponse\"1\n" +
+	"\x14SaveCardOrderRequest\x12\x19\n" +
+	"\bcard_ids\x18\x01 \x03(\tR\acardIds\"\x17\n" +
+	"\x15SaveCardOrderResponse\"H\n" +
+	"\x06Member\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
+	"\busername\x18\x03 \x01(\tR\busername\"\x14\n" +
+	"\x12ListMembersRequest\"C\n" +
+	"\x13ListMembersResponse\x12,\n" +
+	"\amembers\x18\x01 \x03(\v2\x12.linkhub.v1.MemberR\amembers\"j\n" +
 	"\rGetMeResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
@@ -1208,13 +1679,17 @@ const file_linkhub_v1_linkhub_proto_rawDesc = "" +
 	"\bcategory\x18\x01 \x01(\v2\x14.linkhub.v1.CategoryR\bcategory\"'\n" +
 	"\x15DeleteCategoryRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x18\n" +
-	"\x16DeleteCategoryResponse2\xa3\x06\n" +
+	"\x16DeleteCategoryResponse2\x8a\t\n" +
 	"\n" +
 	"HubService\x12W\n" +
 	"\x0eListCategories\x12!.linkhub.v1.ListCategoriesRequest\x1a\".linkhub.v1.ListCategoriesResponse\x12H\n" +
 	"\tListCards\x12\x1c.linkhub.v1.ListCardsRequest\x1a\x1d.linkhub.v1.ListCardsResponse\x12B\n" +
 	"\aGetCard\x12\x1a.linkhub.v1.GetCardRequest\x1a\x1b.linkhub.v1.GetCardResponse\x12<\n" +
-	"\x05GetMe\x12\x18.linkhub.v1.GetMeRequest\x1a\x19.linkhub.v1.GetMeResponse\x12K\n" +
+	"\x05GetMe\x12\x18.linkhub.v1.GetMeRequest\x1a\x19.linkhub.v1.GetMeResponse\x12c\n" +
+	"\x12GetCardPreferences\x12%.linkhub.v1.GetCardPreferencesRequest\x1a&.linkhub.v1.GetCardPreferencesResponse\x12Z\n" +
+	"\x0fSetCardFavorite\x12\".linkhub.v1.SetCardFavoriteRequest\x1a#.linkhub.v1.SetCardFavoriteResponse\x12T\n" +
+	"\rSaveCardOrder\x12 .linkhub.v1.SaveCardOrderRequest\x1a!.linkhub.v1.SaveCardOrderResponse\x12N\n" +
+	"\vListMembers\x12\x1e.linkhub.v1.ListMembersRequest\x1a\x1f.linkhub.v1.ListMembersResponse\x12K\n" +
 	"\n" +
 	"CreateCard\x12\x1d.linkhub.v1.CreateCardRequest\x1a\x1e.linkhub.v1.CreateCardResponse\x12K\n" +
 	"\n" +
@@ -1237,71 +1712,89 @@ func file_linkhub_v1_linkhub_proto_rawDescGZIP() []byte {
 	return file_linkhub_v1_linkhub_proto_rawDescData
 }
 
-var file_linkhub_v1_linkhub_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_linkhub_v1_linkhub_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_linkhub_v1_linkhub_proto_goTypes = []any{
-	(*Category)(nil),               // 0: linkhub.v1.Category
-	(*Card)(nil),                   // 1: linkhub.v1.Card
-	(*CardInput)(nil),              // 2: linkhub.v1.CardInput
-	(*ListCategoriesRequest)(nil),  // 3: linkhub.v1.ListCategoriesRequest
-	(*ListCategoriesResponse)(nil), // 4: linkhub.v1.ListCategoriesResponse
-	(*ListCardsRequest)(nil),       // 5: linkhub.v1.ListCardsRequest
-	(*ListCardsResponse)(nil),      // 6: linkhub.v1.ListCardsResponse
-	(*GetCardRequest)(nil),         // 7: linkhub.v1.GetCardRequest
-	(*GetCardResponse)(nil),        // 8: linkhub.v1.GetCardResponse
-	(*GetMeRequest)(nil),           // 9: linkhub.v1.GetMeRequest
-	(*GetMeResponse)(nil),          // 10: linkhub.v1.GetMeResponse
-	(*CreateCardRequest)(nil),      // 11: linkhub.v1.CreateCardRequest
-	(*CreateCardResponse)(nil),     // 12: linkhub.v1.CreateCardResponse
-	(*UpdateCardRequest)(nil),      // 13: linkhub.v1.UpdateCardRequest
-	(*UpdateCardResponse)(nil),     // 14: linkhub.v1.UpdateCardResponse
-	(*DeleteCardRequest)(nil),      // 15: linkhub.v1.DeleteCardRequest
-	(*DeleteCardResponse)(nil),     // 16: linkhub.v1.DeleteCardResponse
-	(*CreateCategoryRequest)(nil),  // 17: linkhub.v1.CreateCategoryRequest
-	(*CreateCategoryResponse)(nil), // 18: linkhub.v1.CreateCategoryResponse
-	(*UpdateCategoryRequest)(nil),  // 19: linkhub.v1.UpdateCategoryRequest
-	(*UpdateCategoryResponse)(nil), // 20: linkhub.v1.UpdateCategoryResponse
-	(*DeleteCategoryRequest)(nil),  // 21: linkhub.v1.DeleteCategoryRequest
-	(*DeleteCategoryResponse)(nil), // 22: linkhub.v1.DeleteCategoryResponse
-	(*timestamppb.Timestamp)(nil),  // 23: google.protobuf.Timestamp
+	(*Category)(nil),                   // 0: linkhub.v1.Category
+	(*Card)(nil),                       // 1: linkhub.v1.Card
+	(*CardInput)(nil),                  // 2: linkhub.v1.CardInput
+	(*ListCategoriesRequest)(nil),      // 3: linkhub.v1.ListCategoriesRequest
+	(*ListCategoriesResponse)(nil),     // 4: linkhub.v1.ListCategoriesResponse
+	(*ListCardsRequest)(nil),           // 5: linkhub.v1.ListCardsRequest
+	(*ListCardsResponse)(nil),          // 6: linkhub.v1.ListCardsResponse
+	(*GetCardRequest)(nil),             // 7: linkhub.v1.GetCardRequest
+	(*GetCardResponse)(nil),            // 8: linkhub.v1.GetCardResponse
+	(*GetMeRequest)(nil),               // 9: linkhub.v1.GetMeRequest
+	(*GetCardPreferencesRequest)(nil),  // 10: linkhub.v1.GetCardPreferencesRequest
+	(*GetCardPreferencesResponse)(nil), // 11: linkhub.v1.GetCardPreferencesResponse
+	(*SetCardFavoriteRequest)(nil),     // 12: linkhub.v1.SetCardFavoriteRequest
+	(*SetCardFavoriteResponse)(nil),    // 13: linkhub.v1.SetCardFavoriteResponse
+	(*SaveCardOrderRequest)(nil),       // 14: linkhub.v1.SaveCardOrderRequest
+	(*SaveCardOrderResponse)(nil),      // 15: linkhub.v1.SaveCardOrderResponse
+	(*Member)(nil),                     // 16: linkhub.v1.Member
+	(*ListMembersRequest)(nil),         // 17: linkhub.v1.ListMembersRequest
+	(*ListMembersResponse)(nil),        // 18: linkhub.v1.ListMembersResponse
+	(*GetMeResponse)(nil),              // 19: linkhub.v1.GetMeResponse
+	(*CreateCardRequest)(nil),          // 20: linkhub.v1.CreateCardRequest
+	(*CreateCardResponse)(nil),         // 21: linkhub.v1.CreateCardResponse
+	(*UpdateCardRequest)(nil),          // 22: linkhub.v1.UpdateCardRequest
+	(*UpdateCardResponse)(nil),         // 23: linkhub.v1.UpdateCardResponse
+	(*DeleteCardRequest)(nil),          // 24: linkhub.v1.DeleteCardRequest
+	(*DeleteCardResponse)(nil),         // 25: linkhub.v1.DeleteCardResponse
+	(*CreateCategoryRequest)(nil),      // 26: linkhub.v1.CreateCategoryRequest
+	(*CreateCategoryResponse)(nil),     // 27: linkhub.v1.CreateCategoryResponse
+	(*UpdateCategoryRequest)(nil),      // 28: linkhub.v1.UpdateCategoryRequest
+	(*UpdateCategoryResponse)(nil),     // 29: linkhub.v1.UpdateCategoryResponse
+	(*DeleteCategoryRequest)(nil),      // 30: linkhub.v1.DeleteCategoryRequest
+	(*DeleteCategoryResponse)(nil),     // 31: linkhub.v1.DeleteCategoryResponse
+	(*timestamppb.Timestamp)(nil),      // 32: google.protobuf.Timestamp
 }
 var file_linkhub_v1_linkhub_proto_depIdxs = []int32{
-	23, // 0: linkhub.v1.Card.created_at:type_name -> google.protobuf.Timestamp
-	23, // 1: linkhub.v1.Card.updated_at:type_name -> google.protobuf.Timestamp
+	32, // 0: linkhub.v1.Card.created_at:type_name -> google.protobuf.Timestamp
+	32, // 1: linkhub.v1.Card.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: linkhub.v1.ListCategoriesResponse.categories:type_name -> linkhub.v1.Category
 	1,  // 3: linkhub.v1.ListCardsResponse.cards:type_name -> linkhub.v1.Card
 	1,  // 4: linkhub.v1.GetCardResponse.card:type_name -> linkhub.v1.Card
-	2,  // 5: linkhub.v1.CreateCardRequest.card:type_name -> linkhub.v1.CardInput
-	1,  // 6: linkhub.v1.CreateCardResponse.card:type_name -> linkhub.v1.Card
-	2,  // 7: linkhub.v1.UpdateCardRequest.card:type_name -> linkhub.v1.CardInput
-	23, // 8: linkhub.v1.UpdateCardRequest.expected_updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 9: linkhub.v1.UpdateCardResponse.card:type_name -> linkhub.v1.Card
-	0,  // 10: linkhub.v1.CreateCategoryResponse.category:type_name -> linkhub.v1.Category
-	0,  // 11: linkhub.v1.UpdateCategoryResponse.category:type_name -> linkhub.v1.Category
-	3,  // 12: linkhub.v1.HubService.ListCategories:input_type -> linkhub.v1.ListCategoriesRequest
-	5,  // 13: linkhub.v1.HubService.ListCards:input_type -> linkhub.v1.ListCardsRequest
-	7,  // 14: linkhub.v1.HubService.GetCard:input_type -> linkhub.v1.GetCardRequest
-	9,  // 15: linkhub.v1.HubService.GetMe:input_type -> linkhub.v1.GetMeRequest
-	11, // 16: linkhub.v1.HubService.CreateCard:input_type -> linkhub.v1.CreateCardRequest
-	13, // 17: linkhub.v1.HubService.UpdateCard:input_type -> linkhub.v1.UpdateCardRequest
-	15, // 18: linkhub.v1.HubService.DeleteCard:input_type -> linkhub.v1.DeleteCardRequest
-	17, // 19: linkhub.v1.HubService.CreateCategory:input_type -> linkhub.v1.CreateCategoryRequest
-	19, // 20: linkhub.v1.HubService.UpdateCategory:input_type -> linkhub.v1.UpdateCategoryRequest
-	21, // 21: linkhub.v1.HubService.DeleteCategory:input_type -> linkhub.v1.DeleteCategoryRequest
-	4,  // 22: linkhub.v1.HubService.ListCategories:output_type -> linkhub.v1.ListCategoriesResponse
-	6,  // 23: linkhub.v1.HubService.ListCards:output_type -> linkhub.v1.ListCardsResponse
-	8,  // 24: linkhub.v1.HubService.GetCard:output_type -> linkhub.v1.GetCardResponse
-	10, // 25: linkhub.v1.HubService.GetMe:output_type -> linkhub.v1.GetMeResponse
-	12, // 26: linkhub.v1.HubService.CreateCard:output_type -> linkhub.v1.CreateCardResponse
-	14, // 27: linkhub.v1.HubService.UpdateCard:output_type -> linkhub.v1.UpdateCardResponse
-	16, // 28: linkhub.v1.HubService.DeleteCard:output_type -> linkhub.v1.DeleteCardResponse
-	18, // 29: linkhub.v1.HubService.CreateCategory:output_type -> linkhub.v1.CreateCategoryResponse
-	20, // 30: linkhub.v1.HubService.UpdateCategory:output_type -> linkhub.v1.UpdateCategoryResponse
-	22, // 31: linkhub.v1.HubService.DeleteCategory:output_type -> linkhub.v1.DeleteCategoryResponse
-	22, // [22:32] is the sub-list for method output_type
-	12, // [12:22] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	16, // 5: linkhub.v1.ListMembersResponse.members:type_name -> linkhub.v1.Member
+	2,  // 6: linkhub.v1.CreateCardRequest.card:type_name -> linkhub.v1.CardInput
+	1,  // 7: linkhub.v1.CreateCardResponse.card:type_name -> linkhub.v1.Card
+	2,  // 8: linkhub.v1.UpdateCardRequest.card:type_name -> linkhub.v1.CardInput
+	32, // 9: linkhub.v1.UpdateCardRequest.expected_updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 10: linkhub.v1.UpdateCardResponse.card:type_name -> linkhub.v1.Card
+	0,  // 11: linkhub.v1.CreateCategoryResponse.category:type_name -> linkhub.v1.Category
+	0,  // 12: linkhub.v1.UpdateCategoryResponse.category:type_name -> linkhub.v1.Category
+	3,  // 13: linkhub.v1.HubService.ListCategories:input_type -> linkhub.v1.ListCategoriesRequest
+	5,  // 14: linkhub.v1.HubService.ListCards:input_type -> linkhub.v1.ListCardsRequest
+	7,  // 15: linkhub.v1.HubService.GetCard:input_type -> linkhub.v1.GetCardRequest
+	9,  // 16: linkhub.v1.HubService.GetMe:input_type -> linkhub.v1.GetMeRequest
+	10, // 17: linkhub.v1.HubService.GetCardPreferences:input_type -> linkhub.v1.GetCardPreferencesRequest
+	12, // 18: linkhub.v1.HubService.SetCardFavorite:input_type -> linkhub.v1.SetCardFavoriteRequest
+	14, // 19: linkhub.v1.HubService.SaveCardOrder:input_type -> linkhub.v1.SaveCardOrderRequest
+	17, // 20: linkhub.v1.HubService.ListMembers:input_type -> linkhub.v1.ListMembersRequest
+	20, // 21: linkhub.v1.HubService.CreateCard:input_type -> linkhub.v1.CreateCardRequest
+	22, // 22: linkhub.v1.HubService.UpdateCard:input_type -> linkhub.v1.UpdateCardRequest
+	24, // 23: linkhub.v1.HubService.DeleteCard:input_type -> linkhub.v1.DeleteCardRequest
+	26, // 24: linkhub.v1.HubService.CreateCategory:input_type -> linkhub.v1.CreateCategoryRequest
+	28, // 25: linkhub.v1.HubService.UpdateCategory:input_type -> linkhub.v1.UpdateCategoryRequest
+	30, // 26: linkhub.v1.HubService.DeleteCategory:input_type -> linkhub.v1.DeleteCategoryRequest
+	4,  // 27: linkhub.v1.HubService.ListCategories:output_type -> linkhub.v1.ListCategoriesResponse
+	6,  // 28: linkhub.v1.HubService.ListCards:output_type -> linkhub.v1.ListCardsResponse
+	8,  // 29: linkhub.v1.HubService.GetCard:output_type -> linkhub.v1.GetCardResponse
+	19, // 30: linkhub.v1.HubService.GetMe:output_type -> linkhub.v1.GetMeResponse
+	11, // 31: linkhub.v1.HubService.GetCardPreferences:output_type -> linkhub.v1.GetCardPreferencesResponse
+	13, // 32: linkhub.v1.HubService.SetCardFavorite:output_type -> linkhub.v1.SetCardFavoriteResponse
+	15, // 33: linkhub.v1.HubService.SaveCardOrder:output_type -> linkhub.v1.SaveCardOrderResponse
+	18, // 34: linkhub.v1.HubService.ListMembers:output_type -> linkhub.v1.ListMembersResponse
+	21, // 35: linkhub.v1.HubService.CreateCard:output_type -> linkhub.v1.CreateCardResponse
+	23, // 36: linkhub.v1.HubService.UpdateCard:output_type -> linkhub.v1.UpdateCardResponse
+	25, // 37: linkhub.v1.HubService.DeleteCard:output_type -> linkhub.v1.DeleteCardResponse
+	27, // 38: linkhub.v1.HubService.CreateCategory:output_type -> linkhub.v1.CreateCategoryResponse
+	29, // 39: linkhub.v1.HubService.UpdateCategory:output_type -> linkhub.v1.UpdateCategoryResponse
+	31, // 40: linkhub.v1.HubService.DeleteCategory:output_type -> linkhub.v1.DeleteCategoryResponse
+	27, // [27:41] is the sub-list for method output_type
+	13, // [13:27] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_linkhub_v1_linkhub_proto_init() }
@@ -1315,7 +1808,7 @@ func file_linkhub_v1_linkhub_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_linkhub_v1_linkhub_proto_rawDesc), len(file_linkhub_v1_linkhub_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   23,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

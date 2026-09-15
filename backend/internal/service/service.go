@@ -64,10 +64,35 @@ func validateCard(input *pb.CardInput) (store.Card, error) {
 	}
 	slices.Sort(ids)
 	ids = slices.Compact(ids)
-	return store.Card{Name: name, URL: address, Description: strings.TrimSpace(input.DescriptionMarkdown), CategoryIDs: ids}, nil
+	if len(input.SharedUserIds) > 100 {
+		return store.Card{}, invalid("最多分享给 100 位成员")
+	}
+	shared := slices.Clone(input.SharedUserIds)
+	for _, id := range shared {
+		if err := validateID(id); err != nil {
+			return store.Card{}, err
+		}
+	}
+	slices.Sort(shared)
+	shared = slices.Compact(shared)
+	if !input.IsPrivate && len(shared) > 0 {
+		return store.Card{}, invalid("内部公开卡片无需指定分享对象")
+	}
+	return store.Card{Name: name, URL: address, Description: strings.TrimSpace(input.DescriptionMarkdown), CategoryIDs: ids, IsPrivate: input.IsPrivate, SharedUserIDs: shared}, nil
 }
-func cardProto(c store.Card) *pb.Card {
-	return &pb.Card{Id: c.ID, Name: c.Name, DescriptionMarkdown: c.Description, Url: c.URL, CategoryIds: c.CategoryIDs, CreatedAt: timestamppb.New(c.CreatedAt), UpdatedAt: timestamppb.New(c.UpdatedAt)}
+func actorFromContext(ctx context.Context) store.Actor {
+	p, _ := auth.FromContext(ctx)
+	return store.Actor{ID: p.ID, IsAdmin: p.IsAdmin}
+}
+func cardProto(c store.Card, actor store.Actor) *pb.Card {
+	canEdit := actor.IsAdmin || (c.IsPrivate && c.OwnerID == actor.ID)
+	var shared []string
+	if canEdit {
+		shared = c.SharedUserIDs
+	}
+	return &pb.Card{Id: c.ID, Name: c.Name, DescriptionMarkdown: c.Description, Url: c.URL, CategoryIds: c.CategoryIDs,
+		CreatedAt: timestamppb.New(c.CreatedAt), UpdatedAt: timestamppb.New(c.UpdatedAt), IsPrivate: c.IsPrivate,
+		OwnerId: c.OwnerID, SharedUserIds: shared, CanEdit: canEdit}
 }
 func categoryProto(c store.Category) *pb.Category {
 	return &pb.Category{Id: c.ID, Name: c.Name, CardCount: c.CardCount}
@@ -79,6 +104,9 @@ func rpcError(err error) error {
 	code := connect.CodeInternal
 	message := "暂时无法完成操作，请重试"
 	switch {
+	case errors.Is(err, store.ErrForbidden):
+		code = connect.CodePermissionDenied
+		message = err.Error()
 	case errors.Is(err, store.ErrNotFound):
 		code = connect.CodeNotFound
 		message = err.Error()
@@ -103,7 +131,7 @@ func rpcError(err error) error {
 				message = "该分类名称已存在"
 			case "23503":
 				code = connect.CodeFailedPrecondition
-				message = "分类已被删除或仍有关联卡片，请刷新后重试"
+				message = "分类或分享对象已变更，或分类仍有关联卡片，请刷新后重试"
 			case "23514":
 				code = connect.CodeInvalidArgument
 				message = "内容不符合规则，每张卡片必须至少选择一个分类"
@@ -120,7 +148,7 @@ func rpcError(err error) error {
 }
 
 func (s *Service) ListCategories(ctx context.Context, _ *connect.Request[pb.ListCategoriesRequest]) (*connect.Response[pb.ListCategoriesResponse], error) {
-	list, err := s.Store.ListCategories(ctx)
+	list, err := s.Store.ListCategories(ctx, actorFromContext(ctx))
 	if err != nil {
 		return nil, rpcError(err)
 	}
@@ -136,13 +164,13 @@ func (s *Service) ListCards(ctx context.Context, req *connect.Request[pb.ListCar
 			return nil, err
 		}
 	}
-	list, err := s.Store.ListCards(ctx, req.Msg.CategoryId)
+	list, err := s.Store.ListCards(ctx, req.Msg.CategoryId, actorFromContext(ctx))
 	if err != nil {
 		return nil, rpcError(err)
 	}
 	out := &pb.ListCardsResponse{}
 	for _, c := range list {
-		out.Cards = append(out.Cards, cardProto(c))
+		out.Cards = append(out.Cards, cardProto(c, actorFromContext(ctx)))
 	}
 	return connect.NewResponse(out), nil
 }
@@ -150,31 +178,40 @@ func (s *Service) GetCard(ctx context.Context, req *connect.Request[pb.GetCardRe
 	if err := validateID(req.Msg.Id); err != nil {
 		return nil, err
 	}
-	c, err := s.Store.GetCard(ctx, req.Msg.Id)
+	c, err := s.Store.GetCard(ctx, req.Msg.Id, actorFromContext(ctx))
 	if err != nil {
 		return nil, rpcError(err)
 	}
-	return connect.NewResponse(&pb.GetCardResponse{Card: cardProto(c)}), nil
+	return connect.NewResponse(&pb.GetCardResponse{Card: cardProto(c, actorFromContext(ctx))}), nil
 }
 func (s *Service) GetMe(ctx context.Context, _ *connect.Request[pb.GetMeRequest]) (*connect.Response[pb.GetMeResponse], error) {
 	p, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, auth.ErrInvalidToken)
 	}
+	if err := s.Store.RecordMember(ctx, store.Member{ID: p.ID, Name: p.Name, Username: p.Username}); err != nil {
+		return nil, rpcError(err)
+	}
 	return connect.NewResponse(&pb.GetMeResponse{Id: p.ID, Name: p.Name, Username: p.Username, IsAdmin: p.IsAdmin}), nil
 }
 func (s *Service) CreateCard(ctx context.Context, req *connect.Request[pb.CreateCardRequest]) (*connect.Response[pb.CreateCardResponse], error) {
+	if !actorFromContext(ctx).IsAdmin && !req.Msg.Card.GetIsPrivate() {
+		return nil, rpcError(store.ErrForbidden)
+	}
 	c, err := validateCard(req.Msg.Card)
 	if err != nil {
 		return nil, err
 	}
-	c, err = s.Store.SaveCard(ctx, c, nil)
+	c, err = s.Store.SaveCard(ctx, c, nil, actorFromContext(ctx))
 	if err != nil {
 		return nil, rpcError(err)
 	}
-	return connect.NewResponse(&pb.CreateCardResponse{Card: cardProto(c)}), nil
+	return connect.NewResponse(&pb.CreateCardResponse{Card: cardProto(c, actorFromContext(ctx))}), nil
 }
 func (s *Service) UpdateCard(ctx context.Context, req *connect.Request[pb.UpdateCardRequest]) (*connect.Response[pb.UpdateCardResponse], error) {
+	if !actorFromContext(ctx).IsAdmin && !req.Msg.Card.GetIsPrivate() {
+		return nil, rpcError(store.ErrForbidden)
+	}
 	if err := validateID(req.Msg.Id); err != nil {
 		return nil, err
 	}
@@ -187,17 +224,17 @@ func (s *Service) UpdateCard(ctx context.Context, req *connect.Request[pb.Update
 	}
 	c.ID = req.Msg.Id
 	expected := req.Msg.ExpectedUpdatedAt.AsTime()
-	c, err = s.Store.SaveCard(ctx, c, &expected)
+	c, err = s.Store.SaveCard(ctx, c, &expected, actorFromContext(ctx))
 	if err != nil {
 		return nil, rpcError(err)
 	}
-	return connect.NewResponse(&pb.UpdateCardResponse{Card: cardProto(c)}), nil
+	return connect.NewResponse(&pb.UpdateCardResponse{Card: cardProto(c, actorFromContext(ctx))}), nil
 }
 func (s *Service) DeleteCard(ctx context.Context, req *connect.Request[pb.DeleteCardRequest]) (*connect.Response[pb.DeleteCardResponse], error) {
 	if err := validateID(req.Msg.Id); err != nil {
 		return nil, err
 	}
-	if err := s.Store.DeleteCard(ctx, req.Msg.Id); err != nil {
+	if err := s.Store.DeleteCard(ctx, req.Msg.Id, actorFromContext(ctx)); err != nil {
 		return nil, rpcError(err)
 	}
 	return connect.NewResponse(&pb.DeleteCardResponse{}), nil

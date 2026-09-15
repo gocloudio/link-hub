@@ -21,7 +21,7 @@ export function errorText(error: unknown): string {
     if (error.code === Code.Unauthenticated)
       return "登录已失效，请重新登录。填写的内容已保留。";
     if (error.code === Code.PermissionDenied)
-      return "当前账号没有管理员权限，请联系 Entra 管理员。";
+      return "当前账号没有维护此内容的权限，请刷新后重试或联系管理员。";
     if (
       [Code.Unavailable, Code.DeadlineExceeded, Code.Unknown].includes(
         error.code,

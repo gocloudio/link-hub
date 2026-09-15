@@ -42,6 +42,17 @@ const (
 	HubServiceGetCardProcedure = "/linkhub.v1.HubService/GetCard"
 	// HubServiceGetMeProcedure is the fully-qualified name of the HubService's GetMe RPC.
 	HubServiceGetMeProcedure = "/linkhub.v1.HubService/GetMe"
+	// HubServiceGetCardPreferencesProcedure is the fully-qualified name of the HubService's
+	// GetCardPreferences RPC.
+	HubServiceGetCardPreferencesProcedure = "/linkhub.v1.HubService/GetCardPreferences"
+	// HubServiceSetCardFavoriteProcedure is the fully-qualified name of the HubService's
+	// SetCardFavorite RPC.
+	HubServiceSetCardFavoriteProcedure = "/linkhub.v1.HubService/SetCardFavorite"
+	// HubServiceSaveCardOrderProcedure is the fully-qualified name of the HubService's SaveCardOrder
+	// RPC.
+	HubServiceSaveCardOrderProcedure = "/linkhub.v1.HubService/SaveCardOrder"
+	// HubServiceListMembersProcedure is the fully-qualified name of the HubService's ListMembers RPC.
+	HubServiceListMembersProcedure = "/linkhub.v1.HubService/ListMembers"
 	// HubServiceCreateCardProcedure is the fully-qualified name of the HubService's CreateCard RPC.
 	HubServiceCreateCardProcedure = "/linkhub.v1.HubService/CreateCard"
 	// HubServiceUpdateCardProcedure is the fully-qualified name of the HubService's UpdateCard RPC.
@@ -65,6 +76,10 @@ type HubServiceClient interface {
 	ListCards(context.Context, *connect.Request[v1.ListCardsRequest]) (*connect.Response[v1.ListCardsResponse], error)
 	GetCard(context.Context, *connect.Request[v1.GetCardRequest]) (*connect.Response[v1.GetCardResponse], error)
 	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
+	GetCardPreferences(context.Context, *connect.Request[v1.GetCardPreferencesRequest]) (*connect.Response[v1.GetCardPreferencesResponse], error)
+	SetCardFavorite(context.Context, *connect.Request[v1.SetCardFavoriteRequest]) (*connect.Response[v1.SetCardFavoriteResponse], error)
+	SaveCardOrder(context.Context, *connect.Request[v1.SaveCardOrderRequest]) (*connect.Response[v1.SaveCardOrderResponse], error)
+	ListMembers(context.Context, *connect.Request[v1.ListMembersRequest]) (*connect.Response[v1.ListMembersResponse], error)
 	CreateCard(context.Context, *connect.Request[v1.CreateCardRequest]) (*connect.Response[v1.CreateCardResponse], error)
 	UpdateCard(context.Context, *connect.Request[v1.UpdateCardRequest]) (*connect.Response[v1.UpdateCardResponse], error)
 	DeleteCard(context.Context, *connect.Request[v1.DeleteCardRequest]) (*connect.Response[v1.DeleteCardResponse], error)
@@ -108,6 +123,30 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithSchema(hubServiceMethods.ByName("GetMe")),
 			connect.WithClientOptions(opts...),
 		),
+		getCardPreferences: connect.NewClient[v1.GetCardPreferencesRequest, v1.GetCardPreferencesResponse](
+			httpClient,
+			baseURL+HubServiceGetCardPreferencesProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetCardPreferences")),
+			connect.WithClientOptions(opts...),
+		),
+		setCardFavorite: connect.NewClient[v1.SetCardFavoriteRequest, v1.SetCardFavoriteResponse](
+			httpClient,
+			baseURL+HubServiceSetCardFavoriteProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("SetCardFavorite")),
+			connect.WithClientOptions(opts...),
+		),
+		saveCardOrder: connect.NewClient[v1.SaveCardOrderRequest, v1.SaveCardOrderResponse](
+			httpClient,
+			baseURL+HubServiceSaveCardOrderProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("SaveCardOrder")),
+			connect.WithClientOptions(opts...),
+		),
+		listMembers: connect.NewClient[v1.ListMembersRequest, v1.ListMembersResponse](
+			httpClient,
+			baseURL+HubServiceListMembersProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("ListMembers")),
+			connect.WithClientOptions(opts...),
+		),
 		createCard: connect.NewClient[v1.CreateCardRequest, v1.CreateCardResponse](
 			httpClient,
 			baseURL+HubServiceCreateCardProcedure,
@@ -149,16 +188,20 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 
 // hubServiceClient implements HubServiceClient.
 type hubServiceClient struct {
-	listCategories *connect.Client[v1.ListCategoriesRequest, v1.ListCategoriesResponse]
-	listCards      *connect.Client[v1.ListCardsRequest, v1.ListCardsResponse]
-	getCard        *connect.Client[v1.GetCardRequest, v1.GetCardResponse]
-	getMe          *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
-	createCard     *connect.Client[v1.CreateCardRequest, v1.CreateCardResponse]
-	updateCard     *connect.Client[v1.UpdateCardRequest, v1.UpdateCardResponse]
-	deleteCard     *connect.Client[v1.DeleteCardRequest, v1.DeleteCardResponse]
-	createCategory *connect.Client[v1.CreateCategoryRequest, v1.CreateCategoryResponse]
-	updateCategory *connect.Client[v1.UpdateCategoryRequest, v1.UpdateCategoryResponse]
-	deleteCategory *connect.Client[v1.DeleteCategoryRequest, v1.DeleteCategoryResponse]
+	listCategories     *connect.Client[v1.ListCategoriesRequest, v1.ListCategoriesResponse]
+	listCards          *connect.Client[v1.ListCardsRequest, v1.ListCardsResponse]
+	getCard            *connect.Client[v1.GetCardRequest, v1.GetCardResponse]
+	getMe              *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
+	getCardPreferences *connect.Client[v1.GetCardPreferencesRequest, v1.GetCardPreferencesResponse]
+	setCardFavorite    *connect.Client[v1.SetCardFavoriteRequest, v1.SetCardFavoriteResponse]
+	saveCardOrder      *connect.Client[v1.SaveCardOrderRequest, v1.SaveCardOrderResponse]
+	listMembers        *connect.Client[v1.ListMembersRequest, v1.ListMembersResponse]
+	createCard         *connect.Client[v1.CreateCardRequest, v1.CreateCardResponse]
+	updateCard         *connect.Client[v1.UpdateCardRequest, v1.UpdateCardResponse]
+	deleteCard         *connect.Client[v1.DeleteCardRequest, v1.DeleteCardResponse]
+	createCategory     *connect.Client[v1.CreateCategoryRequest, v1.CreateCategoryResponse]
+	updateCategory     *connect.Client[v1.UpdateCategoryRequest, v1.UpdateCategoryResponse]
+	deleteCategory     *connect.Client[v1.DeleteCategoryRequest, v1.DeleteCategoryResponse]
 }
 
 // ListCategories calls linkhub.v1.HubService.ListCategories.
@@ -179,6 +222,26 @@ func (c *hubServiceClient) GetCard(ctx context.Context, req *connect.Request[v1.
 // GetMe calls linkhub.v1.HubService.GetMe.
 func (c *hubServiceClient) GetMe(ctx context.Context, req *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error) {
 	return c.getMe.CallUnary(ctx, req)
+}
+
+// GetCardPreferences calls linkhub.v1.HubService.GetCardPreferences.
+func (c *hubServiceClient) GetCardPreferences(ctx context.Context, req *connect.Request[v1.GetCardPreferencesRequest]) (*connect.Response[v1.GetCardPreferencesResponse], error) {
+	return c.getCardPreferences.CallUnary(ctx, req)
+}
+
+// SetCardFavorite calls linkhub.v1.HubService.SetCardFavorite.
+func (c *hubServiceClient) SetCardFavorite(ctx context.Context, req *connect.Request[v1.SetCardFavoriteRequest]) (*connect.Response[v1.SetCardFavoriteResponse], error) {
+	return c.setCardFavorite.CallUnary(ctx, req)
+}
+
+// SaveCardOrder calls linkhub.v1.HubService.SaveCardOrder.
+func (c *hubServiceClient) SaveCardOrder(ctx context.Context, req *connect.Request[v1.SaveCardOrderRequest]) (*connect.Response[v1.SaveCardOrderResponse], error) {
+	return c.saveCardOrder.CallUnary(ctx, req)
+}
+
+// ListMembers calls linkhub.v1.HubService.ListMembers.
+func (c *hubServiceClient) ListMembers(ctx context.Context, req *connect.Request[v1.ListMembersRequest]) (*connect.Response[v1.ListMembersResponse], error) {
+	return c.listMembers.CallUnary(ctx, req)
 }
 
 // CreateCard calls linkhub.v1.HubService.CreateCard.
@@ -217,6 +280,10 @@ type HubServiceHandler interface {
 	ListCards(context.Context, *connect.Request[v1.ListCardsRequest]) (*connect.Response[v1.ListCardsResponse], error)
 	GetCard(context.Context, *connect.Request[v1.GetCardRequest]) (*connect.Response[v1.GetCardResponse], error)
 	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
+	GetCardPreferences(context.Context, *connect.Request[v1.GetCardPreferencesRequest]) (*connect.Response[v1.GetCardPreferencesResponse], error)
+	SetCardFavorite(context.Context, *connect.Request[v1.SetCardFavoriteRequest]) (*connect.Response[v1.SetCardFavoriteResponse], error)
+	SaveCardOrder(context.Context, *connect.Request[v1.SaveCardOrderRequest]) (*connect.Response[v1.SaveCardOrderResponse], error)
+	ListMembers(context.Context, *connect.Request[v1.ListMembersRequest]) (*connect.Response[v1.ListMembersResponse], error)
 	CreateCard(context.Context, *connect.Request[v1.CreateCardRequest]) (*connect.Response[v1.CreateCardResponse], error)
 	UpdateCard(context.Context, *connect.Request[v1.UpdateCardRequest]) (*connect.Response[v1.UpdateCardResponse], error)
 	DeleteCard(context.Context, *connect.Request[v1.DeleteCardRequest]) (*connect.Response[v1.DeleteCardResponse], error)
@@ -254,6 +321,30 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 		HubServiceGetMeProcedure,
 		svc.GetMe,
 		connect.WithSchema(hubServiceMethods.ByName("GetMe")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetCardPreferencesHandler := connect.NewUnaryHandler(
+		HubServiceGetCardPreferencesProcedure,
+		svc.GetCardPreferences,
+		connect.WithSchema(hubServiceMethods.ByName("GetCardPreferences")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceSetCardFavoriteHandler := connect.NewUnaryHandler(
+		HubServiceSetCardFavoriteProcedure,
+		svc.SetCardFavorite,
+		connect.WithSchema(hubServiceMethods.ByName("SetCardFavorite")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceSaveCardOrderHandler := connect.NewUnaryHandler(
+		HubServiceSaveCardOrderProcedure,
+		svc.SaveCardOrder,
+		connect.WithSchema(hubServiceMethods.ByName("SaveCardOrder")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceListMembersHandler := connect.NewUnaryHandler(
+		HubServiceListMembersProcedure,
+		svc.ListMembers,
+		connect.WithSchema(hubServiceMethods.ByName("ListMembers")),
 		connect.WithHandlerOptions(opts...),
 	)
 	hubServiceCreateCardHandler := connect.NewUnaryHandler(
@@ -302,6 +393,14 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 			hubServiceGetCardHandler.ServeHTTP(w, r)
 		case HubServiceGetMeProcedure:
 			hubServiceGetMeHandler.ServeHTTP(w, r)
+		case HubServiceGetCardPreferencesProcedure:
+			hubServiceGetCardPreferencesHandler.ServeHTTP(w, r)
+		case HubServiceSetCardFavoriteProcedure:
+			hubServiceSetCardFavoriteHandler.ServeHTTP(w, r)
+		case HubServiceSaveCardOrderProcedure:
+			hubServiceSaveCardOrderHandler.ServeHTTP(w, r)
+		case HubServiceListMembersProcedure:
+			hubServiceListMembersHandler.ServeHTTP(w, r)
 		case HubServiceCreateCardProcedure:
 			hubServiceCreateCardHandler.ServeHTTP(w, r)
 		case HubServiceUpdateCardProcedure:
@@ -337,6 +436,22 @@ func (UnimplementedHubServiceHandler) GetCard(context.Context, *connect.Request[
 
 func (UnimplementedHubServiceHandler) GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("linkhub.v1.HubService.GetMe is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetCardPreferences(context.Context, *connect.Request[v1.GetCardPreferencesRequest]) (*connect.Response[v1.GetCardPreferencesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("linkhub.v1.HubService.GetCardPreferences is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) SetCardFavorite(context.Context, *connect.Request[v1.SetCardFavoriteRequest]) (*connect.Response[v1.SetCardFavoriteResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("linkhub.v1.HubService.SetCardFavorite is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) SaveCardOrder(context.Context, *connect.Request[v1.SaveCardOrderRequest]) (*connect.Response[v1.SaveCardOrderResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("linkhub.v1.HubService.SaveCardOrder is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) ListMembers(context.Context, *connect.Request[v1.ListMembersRequest]) (*connect.Response[v1.ListMembersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("linkhub.v1.HubService.ListMembers is not implemented"))
 }
 
 func (UnimplementedHubServiceHandler) CreateCard(context.Context, *connect.Request[v1.CreateCardRequest]) (*connect.Response[v1.CreateCardResponse], error) {

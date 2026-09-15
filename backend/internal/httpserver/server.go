@@ -34,10 +34,17 @@ func authorization(verifier auth.Verifier) connect.UnaryInterceptorFunc {
 			}
 			switch req.Spec().Procedure {
 			case linkhubv1connect.HubServiceGetMeProcedure,
+				linkhubv1connect.HubServiceListMembersProcedure,
+				linkhubv1connect.HubServiceCreateCardProcedure,
+				linkhubv1connect.HubServiceUpdateCardProcedure,
+				linkhubv1connect.HubServiceDeleteCardProcedure,
+				linkhubv1connect.HubServiceGetCardPreferencesProcedure,
+				linkhubv1connect.HubServiceSetCardFavoriteProcedure,
+				linkhubv1connect.HubServiceSaveCardOrderProcedure,
 				linkhubv1connect.HubServiceListCategoriesProcedure,
 				linkhubv1connect.HubServiceListCardsProcedure,
 				linkhubv1connect.HubServiceGetCardProcedure:
-				// All reads require a valid team login; only writes require an admin role.
+				// Team members may read content and maintain their own preferences.
 			default:
 				if !p.IsAdmin {
 					return nil, connect.NewError(connect.CodePermissionDenied, errors.New("当前账号没有管理员权限"))

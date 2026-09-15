@@ -11,6 +11,10 @@ service HubService {
   rpc ListCards(ListCardsRequest) returns (ListCardsResponse);
   rpc GetCard(GetCardRequest) returns (GetCardResponse);
   rpc GetMe(GetMeRequest) returns (GetMeResponse);
+  rpc GetCardPreferences(GetCardPreferencesRequest) returns (GetCardPreferencesResponse);
+  rpc SetCardFavorite(SetCardFavoriteRequest) returns (SetCardFavoriteResponse);
+  rpc SaveCardOrder(SaveCardOrderRequest) returns (SaveCardOrderResponse);
+  rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
   rpc CreateCard(CreateCardRequest) returns (CreateCardResponse);
   rpc UpdateCard(UpdateCardRequest) returns (UpdateCardResponse);
   rpc DeleteCard(DeleteCardRequest) returns (DeleteCardResponse);
@@ -33,6 +37,10 @@ message Card {
   repeated string category_ids = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
+  bool is_private = 8;
+  string owner_id = 9;
+  repeated string shared_user_ids = 10;
+  bool can_edit = 11;
 }
 
 message CardInput {
@@ -40,6 +48,8 @@ message CardInput {
   string description_markdown = 2;
   string url = 3;
   repeated string category_ids = 4;
+  bool is_private = 5;
+  repeated string shared_user_ids = 6;
 }
 
 message ListCategoriesRequest {}
@@ -49,6 +59,25 @@ message ListCardsResponse { repeated Card cards = 1; }
 message GetCardRequest { string id = 1; }
 message GetCardResponse { Card card = 1; }
 message GetMeRequest {}
+message GetCardPreferencesRequest {}
+message GetCardPreferencesResponse {
+  repeated string favorite_card_ids = 1;
+  repeated string ordered_card_ids = 2;
+}
+message SetCardFavoriteRequest {
+  string card_id = 1;
+  bool favorite = 2;
+}
+message SetCardFavoriteResponse {}
+message SaveCardOrderRequest { repeated string card_ids = 1; }
+message SaveCardOrderResponse {}
+message Member {
+  string id = 1;
+  string name = 2;
+  string username = 3;
+}
+message ListMembersRequest {}
+message ListMembersResponse { repeated Member members = 1; }
 message GetMeResponse {
   string id = 1;
   string name = 2;

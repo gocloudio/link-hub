@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file linkhub/v1/linkhub.proto.
  */
 export const file_linkhub_v1_linkhub: GenFile = /*@__PURE__*/
-  fileDesc("ChhsaW5raHViL3YxL2xpbmtodWIucHJvdG8SCmxpbmtodWIudjEiOAoIQ2F0ZWdvcnkSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRISCgpjYXJkX2NvdW50GAMgASgFIsEBCgRDYXJkEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSHAoUZGVzY3JpcHRpb25fbWFya2Rvd24YAyABKAkSCwoDdXJsGAQgASgJEhQKDGNhdGVnb3J5X2lkcxgFIAMoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJaCglDYXJkSW5wdXQSDAoEbmFtZRgBIAEoCRIcChRkZXNjcmlwdGlvbl9tYXJrZG93bhgCIAEoCRILCgN1cmwYAyABKAkSFAoMY2F0ZWdvcnlfaWRzGAQgAygJIhcKFUxpc3RDYXRlZ29yaWVzUmVxdWVzdCJCChZMaXN0Q2F0ZWdvcmllc1Jlc3BvbnNlEigKCmNhdGVnb3JpZXMYASADKAsyFC5saW5raHViLnYxLkNhdGVnb3J5IicKEExpc3RDYXJkc1JlcXVlc3QSEwoLY2F0ZWdvcnlfaWQYASABKAkiNAoRTGlzdENhcmRzUmVzcG9uc2USHwoFY2FyZHMYASADKAsyEC5saW5raHViLnYxLkNhcmQiHAoOR2V0Q2FyZFJlcXVlc3QSCgoCaWQYASABKAkiMQoPR2V0Q2FyZFJlc3BvbnNlEh4KBGNhcmQYASABKAsyEC5saW5raHViLnYxLkNhcmQiDgoMR2V0TWVSZXF1ZXN0Ik0KDUdldE1lUmVzcG9uc2USCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIQCgh1c2VybmFtZRgDIAEoCRIQCghpc19hZG1pbhgEIAEoCCI4ChFDcmVhdGVDYXJkUmVxdWVzdBIjCgRjYXJkGAEgASgLMhUubGlua2h1Yi52MS5DYXJkSW5wdXQiNAoSQ3JlYXRlQ2FyZFJlc3BvbnNlEh4KBGNhcmQYASABKAsyEC5saW5raHViLnYxLkNhcmQifQoRVXBkYXRlQ2FyZFJlcXVlc3QSCgoCaWQYASABKAkSIwoEY2FyZBgCIAEoCzIVLmxpbmtodWIudjEuQ2FyZElucHV0EjcKE2V4cGVjdGVkX3VwZGF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjQKElVwZGF0ZUNhcmRSZXNwb25zZRIeCgRjYXJkGAEgASgLMhAubGlua2h1Yi52MS5DYXJkIh8KEURlbGV0ZUNhcmRSZXF1ZXN0EgoKAmlkGAEgASgJIhQKEkRlbGV0ZUNhcmRSZXNwb25zZSIlChVDcmVhdGVDYXRlZ29yeVJlcXVlc3QSDAoEbmFtZRgBIAEoCSJAChZDcmVhdGVDYXRlZ29yeVJlc3BvbnNlEiYKCGNhdGVnb3J5GAEgASgLMhQubGlua2h1Yi52MS5DYXRlZ29yeSIxChVVcGRhdGVDYXRlZ29yeVJlcXVlc3QSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCSJAChZVcGRhdGVDYXRlZ29yeVJlc3BvbnNlEiYKCGNhdGVnb3J5GAEgASgLMhQubGlua2h1Yi52MS5DYXRlZ29yeSIjChVEZWxldGVDYXRlZ29yeVJlcXVlc3QSCgoCaWQYASABKAkiGAoWRGVsZXRlQ2F0ZWdvcnlSZXNwb25zZTKjBgoKSHViU2VydmljZRJXCg5MaXN0Q2F0ZWdvcmllcxIhLmxpbmtodWIudjEuTGlzdENhdGVnb3JpZXNSZXF1ZXN0GiIubGlua2h1Yi52MS5MaXN0Q2F0ZWdvcmllc1Jlc3BvbnNlEkgKCUxpc3RDYXJkcxIcLmxpbmtodWIudjEuTGlzdENhcmRzUmVxdWVzdBodLmxpbmtodWIudjEuTGlzdENhcmRzUmVzcG9uc2USQgoHR2V0Q2FyZBIaLmxpbmtodWIudjEuR2V0Q2FyZFJlcXVlc3QaGy5saW5raHViLnYxLkdldENhcmRSZXNwb25zZRI8CgVHZXRNZRIYLmxpbmtodWIudjEuR2V0TWVSZXF1ZXN0GhkubGlua2h1Yi52MS5HZXRNZVJlc3BvbnNlEksKCkNyZWF0ZUNhcmQSHS5saW5raHViLnYxLkNyZWF0ZUNhcmRSZXF1ZXN0Gh4ubGlua2h1Yi52MS5DcmVhdGVDYXJkUmVzcG9uc2USSwoKVXBkYXRlQ2FyZBIdLmxpbmtodWIudjEuVXBkYXRlQ2FyZFJlcXVlc3QaHi5saW5raHViLnYxLlVwZGF0ZUNhcmRSZXNwb25zZRJLCgpEZWxldGVDYXJkEh0ubGlua2h1Yi52MS5EZWxldGVDYXJkUmVxdWVzdBoeLmxpbmtodWIudjEuRGVsZXRlQ2FyZFJlc3BvbnNlElcKDkNyZWF0ZUNhdGVnb3J5EiEubGlua2h1Yi52MS5DcmVhdGVDYXRlZ29yeVJlcXVlc3QaIi5saW5raHViLnYxLkNyZWF0ZUNhdGVnb3J5UmVzcG9uc2USVwoOVXBkYXRlQ2F0ZWdvcnkSIS5saW5raHViLnYxLlVwZGF0ZUNhdGVnb3J5UmVxdWVzdBoiLmxpbmtodWIudjEuVXBkYXRlQ2F0ZWdvcnlSZXNwb25zZRJXCg5EZWxldGVDYXRlZ29yeRIhLmxpbmtodWIudjEuRGVsZXRlQ2F0ZWdvcnlSZXF1ZXN0GiIubGlua2h1Yi52MS5EZWxldGVDYXRlZ29yeVJlc3BvbnNlQkBaPmdpdGh1Yi5jb20vZ29jbG91ZGlvL2xpbmstaHViL2JhY2tlbmQvZ2VuL2xpbmtodWIvdjE7bGlua2h1YnYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChhsaW5raHViL3YxL2xpbmtodWIucHJvdG8SCmxpbmtodWIudjEiOAoIQ2F0ZWdvcnkSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRISCgpjYXJkX2NvdW50GAMgASgFIpICCgRDYXJkEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSHAoUZGVzY3JpcHRpb25fbWFya2Rvd24YAyABKAkSCwoDdXJsGAQgASgJEhQKDGNhdGVnb3J5X2lkcxgFIAMoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBISCgppc19wcml2YXRlGAggASgIEhAKCG93bmVyX2lkGAkgASgJEhcKD3NoYXJlZF91c2VyX2lkcxgKIAMoCRIQCghjYW5fZWRpdBgLIAEoCCKHAQoJQ2FyZElucHV0EgwKBG5hbWUYASABKAkSHAoUZGVzY3JpcHRpb25fbWFya2Rvd24YAiABKAkSCwoDdXJsGAMgASgJEhQKDGNhdGVnb3J5X2lkcxgEIAMoCRISCgppc19wcml2YXRlGAUgASgIEhcKD3NoYXJlZF91c2VyX2lkcxgGIAMoCSIXChVMaXN0Q2F0ZWdvcmllc1JlcXVlc3QiQgoWTGlzdENhdGVnb3JpZXNSZXNwb25zZRIoCgpjYXRlZ29yaWVzGAEgAygLMhQubGlua2h1Yi52MS5DYXRlZ29yeSInChBMaXN0Q2FyZHNSZXF1ZXN0EhMKC2NhdGVnb3J5X2lkGAEgASgJIjQKEUxpc3RDYXJkc1Jlc3BvbnNlEh8KBWNhcmRzGAEgAygLMhAubGlua2h1Yi52MS5DYXJkIhwKDkdldENhcmRSZXF1ZXN0EgoKAmlkGAEgASgJIjEKD0dldENhcmRSZXNwb25zZRIeCgRjYXJkGAEgASgLMhAubGlua2h1Yi52MS5DYXJkIg4KDEdldE1lUmVxdWVzdCIbChlHZXRDYXJkUHJlZmVyZW5jZXNSZXF1ZXN0IlEKGkdldENhcmRQcmVmZXJlbmNlc1Jlc3BvbnNlEhkKEWZhdm9yaXRlX2NhcmRfaWRzGAEgAygJEhgKEG9yZGVyZWRfY2FyZF9pZHMYAiADKAkiOwoWU2V0Q2FyZEZhdm9yaXRlUmVxdWVzdBIPCgdjYXJkX2lkGAEgASgJEhAKCGZhdm9yaXRlGAIgASgIIhkKF1NldENhcmRGYXZvcml0ZVJlc3BvbnNlIigKFFNhdmVDYXJkT3JkZXJSZXF1ZXN0EhAKCGNhcmRfaWRzGAEgAygJIhcKFVNhdmVDYXJkT3JkZXJSZXNwb25zZSI0CgZNZW1iZXISCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIQCgh1c2VybmFtZRgDIAEoCSIUChJMaXN0TWVtYmVyc1JlcXVlc3QiOgoTTGlzdE1lbWJlcnNSZXNwb25zZRIjCgdtZW1iZXJzGAEgAygLMhIubGlua2h1Yi52MS5NZW1iZXIiTQoNR2V0TWVSZXNwb25zZRIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhAKCHVzZXJuYW1lGAMgASgJEhAKCGlzX2FkbWluGAQgASgIIjgKEUNyZWF0ZUNhcmRSZXF1ZXN0EiMKBGNhcmQYASABKAsyFS5saW5raHViLnYxLkNhcmRJbnB1dCI0ChJDcmVhdGVDYXJkUmVzcG9uc2USHgoEY2FyZBgBIAEoCzIQLmxpbmtodWIudjEuQ2FyZCJ9ChFVcGRhdGVDYXJkUmVxdWVzdBIKCgJpZBgBIAEoCRIjCgRjYXJkGAIgASgLMhUubGlua2h1Yi52MS5DYXJkSW5wdXQSNwoTZXhwZWN0ZWRfdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiNAoSVXBkYXRlQ2FyZFJlc3BvbnNlEh4KBGNhcmQYASABKAsyEC5saW5raHViLnYxLkNhcmQiHwoRRGVsZXRlQ2FyZFJlcXVlc3QSCgoCaWQYASABKAkiFAoSRGVsZXRlQ2FyZFJlc3BvbnNlIiUKFUNyZWF0ZUNhdGVnb3J5UmVxdWVzdBIMCgRuYW1lGAEgASgJIkAKFkNyZWF0ZUNhdGVnb3J5UmVzcG9uc2USJgoIY2F0ZWdvcnkYASABKAsyFC5saW5raHViLnYxLkNhdGVnb3J5IjEKFVVwZGF0ZUNhdGVnb3J5UmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJIkAKFlVwZGF0ZUNhdGVnb3J5UmVzcG9uc2USJgoIY2F0ZWdvcnkYASABKAsyFC5saW5raHViLnYxLkNhdGVnb3J5IiMKFURlbGV0ZUNhdGVnb3J5UmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVDYXRlZ29yeVJlc3BvbnNlMooJCgpIdWJTZXJ2aWNlElcKDkxpc3RDYXRlZ29yaWVzEiEubGlua2h1Yi52MS5MaXN0Q2F0ZWdvcmllc1JlcXVlc3QaIi5saW5raHViLnYxLkxpc3RDYXRlZ29yaWVzUmVzcG9uc2USSAoJTGlzdENhcmRzEhwubGlua2h1Yi52MS5MaXN0Q2FyZHNSZXF1ZXN0Gh0ubGlua2h1Yi52MS5MaXN0Q2FyZHNSZXNwb25zZRJCCgdHZXRDYXJkEhoubGlua2h1Yi52MS5HZXRDYXJkUmVxdWVzdBobLmxpbmtodWIudjEuR2V0Q2FyZFJlc3BvbnNlEjwKBUdldE1lEhgubGlua2h1Yi52MS5HZXRNZVJlcXVlc3QaGS5saW5raHViLnYxLkdldE1lUmVzcG9uc2USYwoSR2V0Q2FyZFByZWZlcmVuY2VzEiUubGlua2h1Yi52MS5HZXRDYXJkUHJlZmVyZW5jZXNSZXF1ZXN0GiYubGlua2h1Yi52MS5HZXRDYXJkUHJlZmVyZW5jZXNSZXNwb25zZRJaCg9TZXRDYXJkRmF2b3JpdGUSIi5saW5raHViLnYxLlNldENhcmRGYXZvcml0ZVJlcXVlc3QaIy5saW5raHViLnYxLlNldENhcmRGYXZvcml0ZVJlc3BvbnNlElQKDVNhdmVDYXJkT3JkZXISIC5saW5raHViLnYxLlNhdmVDYXJkT3JkZXJSZXF1ZXN0GiEubGlua2h1Yi52MS5TYXZlQ2FyZE9yZGVyUmVzcG9uc2USTgoLTGlzdE1lbWJlcnMSHi5saW5raHViLnYxLkxpc3RNZW1iZXJzUmVxdWVzdBofLmxpbmtodWIudjEuTGlzdE1lbWJlcnNSZXNwb25zZRJLCgpDcmVhdGVDYXJkEh0ubGlua2h1Yi52MS5DcmVhdGVDYXJkUmVxdWVzdBoeLmxpbmtodWIudjEuQ3JlYXRlQ2FyZFJlc3BvbnNlEksKClVwZGF0ZUNhcmQSHS5saW5raHViLnYxLlVwZGF0ZUNhcmRSZXF1ZXN0Gh4ubGlua2h1Yi52MS5VcGRhdGVDYXJkUmVzcG9uc2USSwoKRGVsZXRlQ2FyZBIdLmxpbmtodWIudjEuRGVsZXRlQ2FyZFJlcXVlc3QaHi5saW5raHViLnYxLkRlbGV0ZUNhcmRSZXNwb25zZRJXCg5DcmVhdGVDYXRlZ29yeRIhLmxpbmtodWIudjEuQ3JlYXRlQ2F0ZWdvcnlSZXF1ZXN0GiIubGlua2h1Yi52MS5DcmVhdGVDYXRlZ29yeVJlc3BvbnNlElcKDlVwZGF0ZUNhdGVnb3J5EiEubGlua2h1Yi52MS5VcGRhdGVDYXRlZ29yeVJlcXVlc3QaIi5saW5raHViLnYxLlVwZGF0ZUNhdGVnb3J5UmVzcG9uc2USVwoORGVsZXRlQ2F0ZWdvcnkSIS5saW5raHViLnYxLkRlbGV0ZUNhdGVnb3J5UmVxdWVzdBoiLmxpbmtodWIudjEuRGVsZXRlQ2F0ZWdvcnlSZXNwb25zZUJAWj5naXRodWIuY29tL2dvY2xvdWRpby9saW5rLWh1Yi9iYWNrZW5kL2dlbi9saW5raHViL3YxO2xpbmtodWJ2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message linkhub.v1.Category
@@ -79,6 +79,26 @@ export type Card = Message<"linkhub.v1.Card"> & {
    * @generated from field: google.protobuf.Timestamp updated_at = 7;
    */
   updatedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: bool is_private = 8;
+   */
+  isPrivate: boolean;
+
+  /**
+   * @generated from field: string owner_id = 9;
+   */
+  ownerId: string;
+
+  /**
+   * @generated from field: repeated string shared_user_ids = 10;
+   */
+  sharedUserIds: string[];
+
+  /**
+   * @generated from field: bool can_edit = 11;
+   */
+  canEdit: boolean;
 };
 
 /**
@@ -111,6 +131,16 @@ export type CardInput = Message<"linkhub.v1.CardInput"> & {
    * @generated from field: repeated string category_ids = 4;
    */
   categoryIds: string[];
+
+  /**
+   * @generated from field: bool is_private = 5;
+   */
+  isPrivate: boolean;
+
+  /**
+   * @generated from field: repeated string shared_user_ids = 6;
+   */
+  sharedUserIds: string[];
 };
 
 /**
@@ -232,6 +262,163 @@ export const GetMeRequestSchema: GenMessage<GetMeRequest> = /*@__PURE__*/
   messageDesc(file_linkhub_v1_linkhub, 9);
 
 /**
+ * @generated from message linkhub.v1.GetCardPreferencesRequest
+ */
+export type GetCardPreferencesRequest = Message<"linkhub.v1.GetCardPreferencesRequest"> & {
+};
+
+/**
+ * Describes the message linkhub.v1.GetCardPreferencesRequest.
+ * Use `create(GetCardPreferencesRequestSchema)` to create a new message.
+ */
+export const GetCardPreferencesRequestSchema: GenMessage<GetCardPreferencesRequest> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 10);
+
+/**
+ * @generated from message linkhub.v1.GetCardPreferencesResponse
+ */
+export type GetCardPreferencesResponse = Message<"linkhub.v1.GetCardPreferencesResponse"> & {
+  /**
+   * @generated from field: repeated string favorite_card_ids = 1;
+   */
+  favoriteCardIds: string[];
+
+  /**
+   * @generated from field: repeated string ordered_card_ids = 2;
+   */
+  orderedCardIds: string[];
+};
+
+/**
+ * Describes the message linkhub.v1.GetCardPreferencesResponse.
+ * Use `create(GetCardPreferencesResponseSchema)` to create a new message.
+ */
+export const GetCardPreferencesResponseSchema: GenMessage<GetCardPreferencesResponse> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 11);
+
+/**
+ * @generated from message linkhub.v1.SetCardFavoriteRequest
+ */
+export type SetCardFavoriteRequest = Message<"linkhub.v1.SetCardFavoriteRequest"> & {
+  /**
+   * @generated from field: string card_id = 1;
+   */
+  cardId: string;
+
+  /**
+   * @generated from field: bool favorite = 2;
+   */
+  favorite: boolean;
+};
+
+/**
+ * Describes the message linkhub.v1.SetCardFavoriteRequest.
+ * Use `create(SetCardFavoriteRequestSchema)` to create a new message.
+ */
+export const SetCardFavoriteRequestSchema: GenMessage<SetCardFavoriteRequest> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 12);
+
+/**
+ * @generated from message linkhub.v1.SetCardFavoriteResponse
+ */
+export type SetCardFavoriteResponse = Message<"linkhub.v1.SetCardFavoriteResponse"> & {
+};
+
+/**
+ * Describes the message linkhub.v1.SetCardFavoriteResponse.
+ * Use `create(SetCardFavoriteResponseSchema)` to create a new message.
+ */
+export const SetCardFavoriteResponseSchema: GenMessage<SetCardFavoriteResponse> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 13);
+
+/**
+ * @generated from message linkhub.v1.SaveCardOrderRequest
+ */
+export type SaveCardOrderRequest = Message<"linkhub.v1.SaveCardOrderRequest"> & {
+  /**
+   * @generated from field: repeated string card_ids = 1;
+   */
+  cardIds: string[];
+};
+
+/**
+ * Describes the message linkhub.v1.SaveCardOrderRequest.
+ * Use `create(SaveCardOrderRequestSchema)` to create a new message.
+ */
+export const SaveCardOrderRequestSchema: GenMessage<SaveCardOrderRequest> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 14);
+
+/**
+ * @generated from message linkhub.v1.SaveCardOrderResponse
+ */
+export type SaveCardOrderResponse = Message<"linkhub.v1.SaveCardOrderResponse"> & {
+};
+
+/**
+ * Describes the message linkhub.v1.SaveCardOrderResponse.
+ * Use `create(SaveCardOrderResponseSchema)` to create a new message.
+ */
+export const SaveCardOrderResponseSchema: GenMessage<SaveCardOrderResponse> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 15);
+
+/**
+ * @generated from message linkhub.v1.Member
+ */
+export type Member = Message<"linkhub.v1.Member"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string username = 3;
+   */
+  username: string;
+};
+
+/**
+ * Describes the message linkhub.v1.Member.
+ * Use `create(MemberSchema)` to create a new message.
+ */
+export const MemberSchema: GenMessage<Member> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 16);
+
+/**
+ * @generated from message linkhub.v1.ListMembersRequest
+ */
+export type ListMembersRequest = Message<"linkhub.v1.ListMembersRequest"> & {
+};
+
+/**
+ * Describes the message linkhub.v1.ListMembersRequest.
+ * Use `create(ListMembersRequestSchema)` to create a new message.
+ */
+export const ListMembersRequestSchema: GenMessage<ListMembersRequest> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 17);
+
+/**
+ * @generated from message linkhub.v1.ListMembersResponse
+ */
+export type ListMembersResponse = Message<"linkhub.v1.ListMembersResponse"> & {
+  /**
+   * @generated from field: repeated linkhub.v1.Member members = 1;
+   */
+  members: Member[];
+};
+
+/**
+ * Describes the message linkhub.v1.ListMembersResponse.
+ * Use `create(ListMembersResponseSchema)` to create a new message.
+ */
+export const ListMembersResponseSchema: GenMessage<ListMembersResponse> = /*@__PURE__*/
+  messageDesc(file_linkhub_v1_linkhub, 18);
+
+/**
  * @generated from message linkhub.v1.GetMeResponse
  */
 export type GetMeResponse = Message<"linkhub.v1.GetMeResponse"> & {
@@ -261,7 +448,7 @@ export type GetMeResponse = Message<"linkhub.v1.GetMeResponse"> & {
  * Use `create(GetMeResponseSchema)` to create a new message.
  */
 export const GetMeResponseSchema: GenMessage<GetMeResponse> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 10);
+  messageDesc(file_linkhub_v1_linkhub, 19);
 
 /**
  * @generated from message linkhub.v1.CreateCardRequest
@@ -278,7 +465,7 @@ export type CreateCardRequest = Message<"linkhub.v1.CreateCardRequest"> & {
  * Use `create(CreateCardRequestSchema)` to create a new message.
  */
 export const CreateCardRequestSchema: GenMessage<CreateCardRequest> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 11);
+  messageDesc(file_linkhub_v1_linkhub, 20);
 
 /**
  * @generated from message linkhub.v1.CreateCardResponse
@@ -295,7 +482,7 @@ export type CreateCardResponse = Message<"linkhub.v1.CreateCardResponse"> & {
  * Use `create(CreateCardResponseSchema)` to create a new message.
  */
 export const CreateCardResponseSchema: GenMessage<CreateCardResponse> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 12);
+  messageDesc(file_linkhub_v1_linkhub, 21);
 
 /**
  * @generated from message linkhub.v1.UpdateCardRequest
@@ -322,7 +509,7 @@ export type UpdateCardRequest = Message<"linkhub.v1.UpdateCardRequest"> & {
  * Use `create(UpdateCardRequestSchema)` to create a new message.
  */
 export const UpdateCardRequestSchema: GenMessage<UpdateCardRequest> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 13);
+  messageDesc(file_linkhub_v1_linkhub, 22);
 
 /**
  * @generated from message linkhub.v1.UpdateCardResponse
@@ -339,7 +526,7 @@ export type UpdateCardResponse = Message<"linkhub.v1.UpdateCardResponse"> & {
  * Use `create(UpdateCardResponseSchema)` to create a new message.
  */
 export const UpdateCardResponseSchema: GenMessage<UpdateCardResponse> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 14);
+  messageDesc(file_linkhub_v1_linkhub, 23);
 
 /**
  * @generated from message linkhub.v1.DeleteCardRequest
@@ -356,7 +543,7 @@ export type DeleteCardRequest = Message<"linkhub.v1.DeleteCardRequest"> & {
  * Use `create(DeleteCardRequestSchema)` to create a new message.
  */
 export const DeleteCardRequestSchema: GenMessage<DeleteCardRequest> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 15);
+  messageDesc(file_linkhub_v1_linkhub, 24);
 
 /**
  * @generated from message linkhub.v1.DeleteCardResponse
@@ -369,7 +556,7 @@ export type DeleteCardResponse = Message<"linkhub.v1.DeleteCardResponse"> & {
  * Use `create(DeleteCardResponseSchema)` to create a new message.
  */
 export const DeleteCardResponseSchema: GenMessage<DeleteCardResponse> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 16);
+  messageDesc(file_linkhub_v1_linkhub, 25);
 
 /**
  * @generated from message linkhub.v1.CreateCategoryRequest
@@ -386,7 +573,7 @@ export type CreateCategoryRequest = Message<"linkhub.v1.CreateCategoryRequest"> 
  * Use `create(CreateCategoryRequestSchema)` to create a new message.
  */
 export const CreateCategoryRequestSchema: GenMessage<CreateCategoryRequest> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 17);
+  messageDesc(file_linkhub_v1_linkhub, 26);
 
 /**
  * @generated from message linkhub.v1.CreateCategoryResponse
@@ -403,7 +590,7 @@ export type CreateCategoryResponse = Message<"linkhub.v1.CreateCategoryResponse"
  * Use `create(CreateCategoryResponseSchema)` to create a new message.
  */
 export const CreateCategoryResponseSchema: GenMessage<CreateCategoryResponse> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 18);
+  messageDesc(file_linkhub_v1_linkhub, 27);
 
 /**
  * @generated from message linkhub.v1.UpdateCategoryRequest
@@ -425,7 +612,7 @@ export type UpdateCategoryRequest = Message<"linkhub.v1.UpdateCategoryRequest"> 
  * Use `create(UpdateCategoryRequestSchema)` to create a new message.
  */
 export const UpdateCategoryRequestSchema: GenMessage<UpdateCategoryRequest> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 19);
+  messageDesc(file_linkhub_v1_linkhub, 28);
 
 /**
  * @generated from message linkhub.v1.UpdateCategoryResponse
@@ -442,7 +629,7 @@ export type UpdateCategoryResponse = Message<"linkhub.v1.UpdateCategoryResponse"
  * Use `create(UpdateCategoryResponseSchema)` to create a new message.
  */
 export const UpdateCategoryResponseSchema: GenMessage<UpdateCategoryResponse> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 20);
+  messageDesc(file_linkhub_v1_linkhub, 29);
 
 /**
  * @generated from message linkhub.v1.DeleteCategoryRequest
@@ -459,7 +646,7 @@ export type DeleteCategoryRequest = Message<"linkhub.v1.DeleteCategoryRequest"> 
  * Use `create(DeleteCategoryRequestSchema)` to create a new message.
  */
 export const DeleteCategoryRequestSchema: GenMessage<DeleteCategoryRequest> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 21);
+  messageDesc(file_linkhub_v1_linkhub, 30);
 
 /**
  * @generated from message linkhub.v1.DeleteCategoryResponse
@@ -472,7 +659,7 @@ export type DeleteCategoryResponse = Message<"linkhub.v1.DeleteCategoryResponse"
  * Use `create(DeleteCategoryResponseSchema)` to create a new message.
  */
 export const DeleteCategoryResponseSchema: GenMessage<DeleteCategoryResponse> = /*@__PURE__*/
-  messageDesc(file_linkhub_v1_linkhub, 22);
+  messageDesc(file_linkhub_v1_linkhub, 31);
 
 /**
  * @generated from service linkhub.v1.HubService
@@ -509,6 +696,38 @@ export const HubService: GenService<{
     methodKind: "unary";
     input: typeof GetMeRequestSchema;
     output: typeof GetMeResponseSchema;
+  },
+  /**
+   * @generated from rpc linkhub.v1.HubService.GetCardPreferences
+   */
+  getCardPreferences: {
+    methodKind: "unary";
+    input: typeof GetCardPreferencesRequestSchema;
+    output: typeof GetCardPreferencesResponseSchema;
+  },
+  /**
+   * @generated from rpc linkhub.v1.HubService.SetCardFavorite
+   */
+  setCardFavorite: {
+    methodKind: "unary";
+    input: typeof SetCardFavoriteRequestSchema;
+    output: typeof SetCardFavoriteResponseSchema;
+  },
+  /**
+   * @generated from rpc linkhub.v1.HubService.SaveCardOrder
+   */
+  saveCardOrder: {
+    methodKind: "unary";
+    input: typeof SaveCardOrderRequestSchema;
+    output: typeof SaveCardOrderResponseSchema;
+  },
+  /**
+   * @generated from rpc linkhub.v1.HubService.ListMembers
+   */
+  listMembers: {
+    methodKind: "unary";
+    input: typeof ListMembersRequestSchema;
+    output: typeof ListMembersResponseSchema;
   },
   /**
    * @generated from rpc linkhub.v1.HubService.CreateCard

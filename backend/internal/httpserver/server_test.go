@@ -26,8 +26,9 @@ import (
 type testVerifier struct{}
 
 func (testVerifier) Verify(_ context.Context, raw string) (auth.Principal, error) {
-	if raw == "admin" || raw == "viewer" {
-		return auth.Principal{ID: uuid.Nil.String(), Name: raw, IsAdmin: raw == "admin"}, nil
+	ids := map[string]string{"admin": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "viewer": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "recipient": "cccccccc-cccc-4ccc-8ccc-cccccccccccc", "stranger": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"}
+	if id, ok := ids[raw]; ok {
+		return auth.Principal{ID: id, Name: raw, Username: raw + "@example.com", IsAdmin: raw == "admin"}, nil
 	}
 	return auth.Principal{}, errors.New("invalid token")
 }
@@ -92,7 +93,11 @@ func TestHTTPAuthorizationAndCRUD(t *testing.T) {
 			},
 		}
 		for i, call := range mutations {
-			if code := connect.CodeOf(call()); code != want {
+			expected := want
+			if token == "viewer" && i == 2 {
+				expected = connect.CodeInvalidArgument
+			}
+			if code := connect.CodeOf(call()); code != expected {
 				t.Fatalf("token %q mutation %d code %v want %v", token, i, code, want)
 			}
 		}
@@ -204,4 +209,6 @@ func TestHTTPAuthorizationAndCRUD(t *testing.T) {
 			t.Fatalf("unexpected static path %s: %d", path, res.StatusCode)
 		}
 	}
+	testPrivateCardsAndPreferences(t, ctx, client)
+
 }

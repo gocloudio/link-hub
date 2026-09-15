@@ -49,7 +49,7 @@ kubectl logs -n link-hub deployment/link-hub --previous --tail=100
 1. SPA 应用需要登记当前页面地址，例如 `http://localhost:3180/`；正式部署使用实际 HTTPS 地址。
 2. 前端应具备 API 的委托权限，例如 `api://<API 应用 ID>/dm.access`。
 3. API 应签发 v2 access token，管理员用户应在该 API 应用的角色分配中获得 `dm.admin`（或配置的角色）。
-4. 所有用户必须登录才能查看分类、卡片、说明和链接。已登录但缺少管理员角色的用户只读；退出或身份失效后返回登录页。
+4. 所有用户必须登录才能查看分类、卡片和链接。普通用户可维护自己的私有卡片；公开卡片及收到的分享只读。管理员可维护所有卡片；退出或身份失效后返回登录页。
 
 项目不会自动修改 Entra 应用注册或角色分配。2026-09-15 用户已确认实际登录成功。
 
@@ -57,9 +57,12 @@ kubectl logs -n link-hub deployment/link-hub --previous --tail=100
 
 所有 RPC 位于 `/linkhub.v1.HubService/`：
 
-- 登录用户：`GetMe`、`ListCategories`、`ListCards`、`GetCard`。
+- 登录用户：`GetMe`、`ListMembers`、`ListCategories`、`ListCards`、`GetCard`；卡片查询按可见性过滤。
+- 个人偏好：`GetCardPreferences`、`SetCardFavorite`、`SaveCardOrder`，仅能读写当前登录用户对可见卡片的收藏和顺序。
+- 卡片写入：`CreateCard`、`UpdateCard`、`DeleteCard`；普通用户限自己的私有卡片，管理员可维护全部卡片。
 - 未登录：所有业务 RPC 均返回 `unauthenticated`；仅登录页面静态资源、公开登录配置及健康探针可访问。
-- 管理员：卡片、分类的所有创建、修改和删除方法。
+- 分类写入：仅管理员允许创建、修改和删除。
+- 分享名单来自已登录过本站的 Entra 成员，使用 `GetMe` 记录用户信息，不需要 Microsoft Graph 权限或密钥。
 
 服务端用固定租户的 Microsoft JWKS 验证 RS256 签名，并验证 issuer、audience、有效期、v2 token、租户、用户 ID、scope。管理员操作额外检查角色；浏览器是否显示编辑按钮不影响后端的判断。
 

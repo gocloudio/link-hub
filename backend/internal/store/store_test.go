@@ -13,6 +13,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+var testActor = Actor{ID: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", IsAdmin: true}
+
 func testStore(t *testing.T) *Store {
 	t.Helper()
 	address := os.Getenv("TEST_DATABASE_URL")
@@ -59,21 +61,21 @@ func TestCardCategoryTransactions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	card, err := s.SaveCard(ctx, Card{Name: "A", URL: "https://example.com", CategoryIDs: []string{a.ID, b.ID}}, nil)
+	card, err := s.SaveCard(ctx, Card{Name: "A", URL: "https://example.com", CategoryIDs: []string{a.ID, b.ID}}, nil, testActor)
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := s.SaveCard(ctx, Card{Name: "B", URL: "https://example.org", CategoryIDs: []string{a.ID}}, nil)
+	second, err := s.SaveCard(ctx, Card{Name: "B", URL: "https://example.org", CategoryIDs: []string{a.ID}}, nil, testActor)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, filter := range []string{"", a.ID} {
-		list, err := s.ListCards(ctx, filter)
+		list, err := s.ListCards(ctx, filter, testActor)
 		if err != nil || len(list) != 2 || list[0].ID != second.ID {
 			t.Fatalf("dedup/order: %v %v", list, err)
 		}
 	}
-	list, err := s.ListCards(ctx, b.ID)
+	list, err := s.ListCards(ctx, b.ID, testActor)
 	if err != nil || len(list) != 1 {
 		t.Fatalf("filter: %v %v", list, err)
 	}
@@ -83,14 +85,14 @@ func TestCardCategoryTransactions(t *testing.T) {
 	original := card
 	card.Name = "Changed"
 	card.CategoryIDs = []string{a.ID}
-	card, err = s.SaveCard(ctx, card, &original.UpdatedAt)
+	card, err = s.SaveCard(ctx, card, &original.UpdatedAt, testActor)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !card.CreatedAt.Equal(original.CreatedAt) || !card.UpdatedAt.After(original.UpdatedAt) {
 		t.Fatal("timestamp rules")
 	}
-	if _, err = s.SaveCard(ctx, card, &original.UpdatedAt); !errors.Is(err, ErrConflict) {
+	if _, err = s.SaveCard(ctx, card, &original.UpdatedAt, testActor); !errors.Is(err, ErrConflict) {
 		t.Fatalf("stale write: %v", err)
 	}
 	if err = s.DeleteCategory(ctx, b.ID); err != nil {
@@ -99,10 +101,10 @@ func TestCardCategoryTransactions(t *testing.T) {
 	invalid := card
 	invalid.CategoryIDs = []string{uuid.NewString()}
 	invalid.Name = "must rollback"
-	if _, err = s.SaveCard(ctx, invalid, &card.UpdatedAt); err == nil {
+	if _, err = s.SaveCard(ctx, invalid, &card.UpdatedAt, testActor); err == nil {
 		t.Fatal("missing category accepted")
 	}
-	persisted, err := s.GetCard(ctx, card.ID)
+	persisted, err := s.GetCard(ctx, card.ID, testActor)
 	if err != nil || persisted.Name != "Changed" || len(persisted.CategoryIDs) != 1 {
 		t.Fatalf("transaction rollback: %v %v", persisted, err)
 	}
@@ -112,10 +114,10 @@ func TestCardCategoryTransactions(t *testing.T) {
 	if _, err = s.Pool.Exec(ctx, `INSERT INTO cards(id,name,url) VALUES($1,'Orphan','https://example.com')`, uuid.NewString()); err == nil {
 		t.Fatal("database accepted orphan card")
 	}
-	if err = s.DeleteCard(ctx, card.ID); err != nil {
+	if err = s.DeleteCard(ctx, card.ID, testActor); err != nil {
 		t.Fatal(err)
 	}
-	if err = s.DeleteCard(ctx, second.ID); err != nil {
+	if err = s.DeleteCard(ctx, second.ID, testActor); err != nil {
 		t.Fatal(err)
 	}
 	if err = s.DeleteCategory(ctx, a.ID); err != nil {
@@ -129,7 +131,7 @@ func TestConcurrentEdits(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	card, err := s.SaveCard(ctx, Card{Name: "Concurrent", URL: "https://example.com", CategoryIDs: []string{cat.ID}}, nil)
+	card, err := s.SaveCard(ctx, Card{Name: "Concurrent", URL: "https://example.com", CategoryIDs: []string{cat.ID}}, nil, testActor)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +139,7 @@ func TestConcurrentEdits(t *testing.T) {
 	var wg sync.WaitGroup
 	for range 2 {
 		wg.Add(1)
-		go func() { defer wg.Done(); _, err := s.SaveCard(ctx, card, &card.UpdatedAt); results <- err }()
+		go func() { defer wg.Done(); _, err := s.SaveCard(ctx, card, &card.UpdatedAt, testActor); results <- err }()
 	}
 	wg.Wait()
 	close(results)

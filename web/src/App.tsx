@@ -1,16 +1,8 @@
-import {
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowDownWideNarrow,
   ArrowUpRight,
   Check,
-  ChevronRight,
   Folder,
   FolderOpen,
   Grid2X2,
@@ -18,7 +10,6 @@ import {
   LogOut,
   Menu,
   Moon,
-  Pencil,
   Plus,
   RefreshCw,
   Settings2,
@@ -37,28 +28,27 @@ import {
 import { Button } from "./components/ui/button";
 import { CardEditor, readDraft, type Draft } from "./components/CardEditor";
 import { CategoryManager } from "./components/CategoryManager";
-const Markdown = lazy(() =>
-  import("./components/Markdown").then((module) => ({
-    default: module.Markdown,
-  })),
-);
+import { CardGrid } from "./components/CardGrid";
+import { sortCards, moveVisibleCards } from "./lib/card-order";
 import { api, errorText } from "./lib/api";
-import { domain, excerpt } from "./lib/markdown";
 import { useAuth } from "./auth/AuthProvider";
 import type { Card, Category } from "./gen/linkhub/v1/linkhub_pb";
-function Logo({ name }: { name: string }) {
-  return (
-    <span className="tool-logo" aria-hidden="true">
-      {[...name][0]?.toUpperCase()}
-    </span>
-  );
-}
-function newDraft(): Draft {
-  return { name: "", url: "", descriptionMarkdown: "", categoryIds: [] };
+function newDraft(admin: boolean): Draft {
+  return {
+    name: "",
+    url: "",
+    descriptionMarkdown: "",
+    categoryIds: [],
+    isPrivate: !admin,
+    sharedUserIds: [],
+  };
 }
 function cardDraft(card: Card): Draft {
   return {
     id: card.id,
+    isPrivate: card.isPrivate,
+    ownerId: card.ownerId,
+    sharedUserIds: [...card.sharedUserIds],
     name: card.name,
     url: card.url,
     descriptionMarkdown: card.descriptionMarkdown,
@@ -101,7 +91,7 @@ export default function App() {
               {auth.error}
             </p>
           )}
-          <p>普通成员可查看，管理员可维护内容。</p>
+          <p>收藏常用入口，管理个人私有工具。</p>
         </section>
       </main>
     );
@@ -113,6 +103,10 @@ function Workspace() {
   const admin = !!auth.user?.isAdmin;
   const [cards, setCards] = useState<Card[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [order, setOrder] = useState<string[]>([]);
+  const [savingPreferences, setSavingPreferences] = useState(false);
+  const preferencesBusy = useRef(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState(() => {
@@ -126,7 +120,6 @@ function Workspace() {
   const [theme, setTheme] = useState(
     document.documentElement.dataset.theme ?? "light",
   );
-  const [details, setDetails] = useState<Card | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [categoryManager, setCategoryManager] = useState(false);
   const [deleting, setDeleting] = useState<Card | null>(null);
@@ -137,15 +130,19 @@ function Workspace() {
   const loadVersion = useRef(0);
   const { run } = auth;
   const refresh = useCallback(async () => {
+    if (preferencesBusy.current) return;
     const version = ++loadVersion.current;
     try {
-      const [list, groups] = await Promise.all([
+      const [list, groups, preferences] = await Promise.all([
         run((options) => api.listCards({}, options)),
         run((options) => api.listCategories({}, options)),
+        run((options) => api.getCardPreferences({}, options)),
       ]);
       if (version !== loadVersion.current) return;
       setCards(list.cards);
       setCategories(groups.categories);
+      setFavorites(preferences.favoriteCardIds);
+      setOrder(preferences.orderedCardIds);
       setError("");
       setSelected((value) =>
         groups.categories.some((c) => c.id === value) ? value : "",
@@ -166,10 +163,10 @@ function Workspace() {
     };
   }, [refresh]);
   useEffect(() => {
-    if (admin && !restored.current) {
+    if (!restored.current) {
       restored.current = true;
       const saved = readDraft();
-      if (saved) setDraft(saved);
+      if (saved && (admin || saved.isPrivate)) setDraft(saved);
     }
   }, [admin]);
   useEffect(() => {
@@ -178,12 +175,12 @@ function Workspace() {
     document.documentElement.classList.toggle("dark", theme === "dark");
     try {
       localStorage.setItem("link-hub-theme", theme);
-    } catch { }
+    } catch {}
   }, [theme]);
   useEffect(() => {
     try {
       sessionStorage.setItem("link-hub-category", selected);
-    } catch { }
+    } catch {}
   }, [selected]);
   useEffect(() => {
     if (!toast) return;
@@ -191,9 +188,61 @@ function Workspace() {
     return () => clearTimeout(timer);
   }, [toast]);
   const currentCategory = categories.find((c) => c.id === selected);
+  const sorted = sortCards(cards, favorites, order);
   const visible = selected
-    ? cards.filter((c) => c.categoryIds.includes(selected))
-    : cards;
+    ? sorted.filter((c) => c.categoryIds.includes(selected))
+    : sorted;
+  async function savePreferences(
+    nextFavorites: string[],
+    nextOrder: string[],
+    operation: () => Promise<unknown>,
+  ) {
+    if (preferencesBusy.current) return;
+    preferencesBusy.current = true;
+    ++loadVersion.current;
+    setSavingPreferences(true);
+    setFavorites(nextFavorites);
+    setOrder(nextOrder);
+    try {
+      await operation();
+      setError("");
+    } catch (e) {
+      setFavorites(favorites);
+      setOrder(order);
+      setError(errorText(e));
+    } finally {
+      preferencesBusy.current = false;
+      setSavingPreferences(false);
+    }
+  }
+  function toggleFavorite(card: Card) {
+    const favorite = !favorites.includes(card.id);
+    void savePreferences(
+      favorite
+        ? [...favorites, card.id]
+        : favorites.filter((id) => id !== card.id),
+      order,
+      () =>
+        run((options) =>
+          api.setCardFavorite({ cardId: card.id, favorite }, options),
+        ),
+    );
+  }
+  function reorder(active: string, over: string) {
+    if (favorites.includes(active) !== favorites.includes(over)) return;
+    const group = visible.filter(
+      (card) => favorites.includes(card.id) === favorites.includes(active),
+    );
+    const nextOrder = moveVisibleCards(
+      sorted.map((card) => card.id),
+      group.map((card) => card.id),
+      active,
+      over,
+    );
+    void savePreferences(favorites, nextOrder, () =>
+      run((options) => api.saveCardOrder({ cardIds: nextOrder }, options)),
+    );
+  }
   function select(id: string) {
     setSelected(id);
     setSidebar(false);
@@ -363,22 +412,16 @@ function Workspace() {
                   : "团队常用的系统、工具与文档，都在这里。"}
               </p>
             </div>
-            {admin ? (
-              <Button onClick={() => setDraft(newDraft())}>
-                <Plus />
-                添加卡片
-              </Button>
-            ) : (
-              <div className="heading-symbol" aria-hidden="true">
-                <Grid2X2 />
-              </div>
-            )}
+            <Button onClick={() => setDraft(newDraft(admin))}>
+              <Plus />
+              {admin ? "添加卡片" : "添加私有卡片"}
+            </Button>
           </section>
           {(error || auth.error || (auth.user && !admin)) && (
             <div className="page-notice" role="status">
               {error ||
                 auth.error ||
-                "已登录。当前账号为浏览权限，维护内容需要管理员角色。"}
+                "公开卡片和收到的分享只读；你可以添加私有卡片，管理自己的收藏和顺序。"}
               {error && (
                 <Button variant="ghost" onClick={() => void refresh()}>
                   <RefreshCw />
@@ -396,7 +439,7 @@ function Workspace() {
             </div>
             <span className="sort-label">
               <ArrowDownWideNarrow />
-              最近添加
+              {savingPreferences ? "正在保存…" : "收藏置顶 · 拖拽调整顺序"}
             </span>
           </div>
           {loading ? (
@@ -404,74 +447,20 @@ function Workspace() {
               正在加载团队工具…
             </div>
           ) : visible.length ? (
-            <div className="card-grid">
-              {visible.map((card) => (
-                <article
-                  className={`tool-card ${admin ? "admin-card" : ""}`}
-                  key={card.id}
-                >
-                  <div className="card-head">
-                    <Logo name={card.name} />
-                    <div className="card-heading">
-                      <h2 className="card-title">
-                        <a
-                          href={card.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`${card.name}（新标签页打开）`}
-                        >
-                          {card.name}
-                        </a>
-                      </h2>
-                      <p className="card-subtitle">{domain(card.url)}</p>
-                    </div>
-                    <span className="external-indicator" aria-hidden="true">
-                      <ArrowUpRight />
-                    </span>
-                  </div>
-                  <div className="card-footer">
-                    <div className="card-tags">
-                      {categories
-                        .filter((c) => card.categoryIds.includes(c.id))
-                        .map((c) => (
-                          <span className="tag" key={c.id}>
-                            {c.name}
-                          </span>
-                        ))}
-                    </div>
-                    <button
-                      className="details-button"
-                      aria-label={`查看说明：${card.name}`}
-                      onClick={() => setDetails(card)}
-                    >
-                      查看说明
-                      <ChevronRight />
-                    </button>
-                    {admin && (
-                      <div className="admin-actions">
-                        <button
-                          className="icon-button"
-                          aria-label={`编辑卡片：${card.name}`}
-                          onClick={() => setDraft(cardDraft(card))}
-                        >
-                          <Pencil />
-                        </button>
-                        <button
-                          className="icon-button"
-                          aria-label={`删除卡片：${card.name}`}
-                          onClick={() => {
-                            setDeleteError("");
-                            setDeleting(card);
-                          }}
-                        >
-                          <Trash2 />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
+            <CardGrid
+              cards={visible}
+              categories={categories}
+              favorites={favorites}
+              admin={admin}
+              disabled={savingPreferences}
+              onFavorite={toggleFavorite}
+              onReorder={reorder}
+              onEdit={(card) => setDraft(cardDraft(card))}
+              onDelete={(card) => {
+                setDeleteError("");
+                setDeleting(card);
+              }}
+            />
           ) : (
             <div className="empty-state">
               <span data-icon>
@@ -489,13 +478,13 @@ function Workspace() {
                   ? "请检查连接后重试。"
                   : admin
                     ? "先准备好分类，再添加团队常用的系统或工具。"
-                    : "管理员添加工具后，将在这里展示。"}
+                    : "你可以添加自己的私有卡片，或等待管理员添加公开工具。"}
               </p>
               {admin && !error && (
                 <Button
                   onClick={() =>
                     categories.length
-                      ? setDraft(newDraft())
+                      ? setDraft(newDraft(admin))
                       : setCategoryManager(true)
                   }
                 >
@@ -514,57 +503,7 @@ function Workspace() {
           </footer>
         </main>
       </div>
-      <Dialog
-        open={!!details}
-        onOpenChange={(open) => {
-          if (!open) setDetails(null);
-        }}
-      >
-        <DialogContent
-          className="description-dialog"
-          aria-describedby={undefined}
-        >
-          {details && (
-            <>
-              <header className="modal-header">
-                <div className="modal-title-group">
-                  <Logo name={details.name} />
-                  <div>
-                    <div className="modal-eyebrow">工具说明</div>
-                    <DialogTitle>{details.name}</DialogTitle>
-                  </div>
-                </div>
-              </header>
-              <div className="description-meta">
-                {categories
-                  .filter((c) => details.categoryIds.includes(c.id))
-                  .map((c) => (
-                    <span className="tag" key={c.id}>
-                      {c.name}
-                    </span>
-                  ))}
-              </div>
-              <Suspense fallback={<p className="field-hint">正在加载说明…</p>}>
-                <Markdown value={details.descriptionMarkdown} />
-              </Suspense>
-              <footer className="modal-footer">
-                <span className="domain-label">{domain(details.url)}</span>
-                <Button asChild>
-                  <a
-                    href={details.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    打开工具
-                    <ArrowUpRight />
-                  </a>
-                </Button>
-              </footer>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-      {admin && draft && (
+      {draft && (
         <CardEditor
           initial={draft}
           categories={categories}
@@ -598,7 +537,7 @@ function Workspace() {
         />
       )}
       <Dialog
-        open={admin && !!deleting}
+        open={!!deleting && !!deleting.canEdit}
         onOpenChange={(open) => {
           if (!open && !busy) setDeleting(null);
         }}
@@ -621,7 +560,7 @@ function Workspace() {
             </Button>
             <Button
               variant="destructive"
-              disabled={busy || !admin}
+              disabled={busy || !deleting?.canEdit}
               onClick={() => void remove()}
             >
               {busy ? "删除中…" : "确认删除"}
@@ -631,9 +570,6 @@ function Workspace() {
             <p className="field-error" role="alert">
               {deleteError}
             </p>
-          )}
-          {!admin && (
-            <Button onClick={() => void auth.login()}>重新登录</Button>
           )}
         </DialogContent>
       </Dialog>
