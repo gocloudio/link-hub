@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# 参考 rebalancer 使用的共享 image-tag，显式 TAG 优先。
+set -euo pipefail
+
+if [[ -n "${TAG:-}" ]]; then
+    tag="$TAG"
+else
+    root="${GIT_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+    if ! git -C "$root" rev-parse --verify HEAD >/dev/null 2>&1; then
+        tag="local-$(date +%Y%m%d%H%M%S)"
+    else
+        timestamp=$(date +%Y%m%d%H%M)
+        head_tags=$(git -C "$root" tag --points-at HEAD)
+        head_tag=${head_tags%%$'\n'*}
+        if [[ -n "$head_tag" ]]; then
+            prefix=$(printf '%s' "$head_tag" | sed 's/[^a-zA-Z0-9_.-]/-/g' | cut -c1-100)
+            tag="${prefix}-${timestamp}"
+        else
+            branch=$(git -C "$root" symbolic-ref --quiet --short HEAD || printf 'detached')
+            branch=$(printf '%s' "$branch" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | cut -c1-60)
+            commit=$(git -C "$root" rev-parse --short HEAD)
+            suffix=''
+            if [[ -n "$(git -C "$root" status --porcelain --untracked-files=normal)" ]]; then
+                suffix='-wip'
+            fi
+            prefix=''
+            if [[ -n "${GITHUB_ACTIONS:-}" ]]; then prefix='gha-'; fi
+            tag="${prefix}${branch}-${commit}${suffix}-${timestamp}"
+        fi
+    fi
+fi
+
+if [[ ! "$tag" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ]]; then
+    printf '%s\n' '镜像 TAG 格式错误：须为 1–128 个字母、数字、下划线、点或连字符，且不能以点或连字符开头。' >&2
+    exit 1
+fi
+printf '%s\n' "$tag"

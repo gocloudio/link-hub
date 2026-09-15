@@ -1,0 +1,40 @@
+name: link-hub
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-3180}:8080"
+    environment:
+      DATABASE_URL: postgresql://linkhub:${POSTGRES_PASSWORD:?Run scripts/setup-env.py}@postgres:5432/linkhub?sslmode=disable
+      AUTH_MODE: entra
+      ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:?Set Entra tenant}
+      ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID:?Set Entra client}
+      ENTRA_AUDIENCE: ${ENTRA_AUDIENCE:?Set Entra audience}
+      ENTRA_REQUIRED_SCOPE: ${ENTRA_REQUIRED_SCOPE:-dm.access}
+      ENTRA_API_SCOPE: ${ENTRA_API_SCOPE:-}
+      VITE_ENTRA_API_SCOPE: ${VITE_ENTRA_API_SCOPE:-}
+      ENTRA_ADMIN_ROLE: ${ENTRA_ADMIN_ROLE:-dm.admin}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+  postgres:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: linkhub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/setup-env.py}
+      POSTGRES_DB: linkhub
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U linkhub -d linkhub"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  postgres:

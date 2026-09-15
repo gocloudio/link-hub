@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package linkhub.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/gocloudio/link-hub/backend/gen/linkhub/v1;linkhubv1";
+
+service HubService {
+  rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
+  rpc ListCards(ListCardsRequest) returns (ListCardsResponse);
+  rpc GetCard(GetCardRequest) returns (GetCardResponse);
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
+  rpc CreateCard(CreateCardRequest) returns (CreateCardResponse);
+  rpc UpdateCard(UpdateCardRequest) returns (UpdateCardResponse);
+  rpc DeleteCard(DeleteCardRequest) returns (DeleteCardResponse);
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+  rpc UpdateCategory(UpdateCategoryRequest) returns (UpdateCategoryResponse);
+  rpc DeleteCategory(DeleteCategoryRequest) returns (DeleteCategoryResponse);
+}
+
+message Category {
+  string id = 1;
+  string name = 2;
+  int32 card_count = 3;
+}
+
+message Card {
+  string id = 1;
+  string name = 2;
+  string description_markdown = 3;
+  string url = 4;
+  repeated string category_ids = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message CardInput {
+  string name = 1;
+  string description_markdown = 2;
+  string url = 3;
+  repeated string category_ids = 4;
+}
+
+message ListCategoriesRequest {}
+message ListCategoriesResponse { repeated Category categories = 1; }
+message ListCardsRequest { string category_id = 1; }
+message ListCardsResponse { repeated Card cards = 1; }
+message GetCardRequest { string id = 1; }
+message GetCardResponse { Card card = 1; }
+message GetMeRequest {}
+message GetMeResponse {
+  string id = 1;
+  string name = 2;
+  string username = 3;
+  bool is_admin = 4;
+}
+message CreateCardRequest { CardInput card = 1; }
+message CreateCardResponse { Card card = 1; }
+message UpdateCardRequest {
+  string id = 1;
+  CardInput card = 2;
+  google.protobuf.Timestamp expected_updated_at = 3;
+}
+message UpdateCardResponse { Card card = 1; }
+message DeleteCardRequest { string id = 1; }
+message DeleteCardResponse {}
+message CreateCategoryRequest { string name = 1; }
+message CreateCategoryResponse { Category category = 1; }
+message UpdateCategoryRequest {
+  string id = 1;
+  string name = 2;
+}
+message UpdateCategoryResponse { Category category = 1; }
+message DeleteCategoryRequest { string id = 1; }
+message DeleteCategoryResponse {}

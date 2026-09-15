@@ -1,0 +1,14 @@
+.git
+**/.env
+**/.env.*
+**/node_modules
+**/dist
+prototype
+output
+.playwright-cli
+**/__pycache__
+**/*_test.go
+**/*.test.ts
+**/*.test.tsx
+
+web/qa

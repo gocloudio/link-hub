@@ -1,0 +1,1 @@
+try { const theme = localStorage.getItem('link-hub-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.documentElement.dataset.theme = theme; document.documentElement.classList.toggle('dark', theme === 'dark'); document.documentElement.dataset.colorMode = theme; } catch {}
