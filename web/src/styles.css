@@ -545,7 +545,6 @@ h1 {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 21px 21px 0;
-  min-height: 211px;
   display: flex;
   flex-direction: column;
   transition:
@@ -1384,7 +1383,6 @@ textarea::placeholder {
   }
   .tool-card {
     padding: 24px 24px 0;
-    min-height: 225px;
   }
   .card-title {
     font-size: 16px;
