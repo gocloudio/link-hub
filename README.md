@@ -70,7 +70,7 @@ Dockerfile 使用本机平台执行 npm 构建和 Go 交叉编译，最终运行
 ## 功能
 
 - 左侧分类筛选，卡片支持多分类；分类按名称排序；个人收藏置顶，其次按个人手动顺序，未排序卡片按创建时间倒序。
-- 紧凑卡片在新标签页打开链接；概览不显示描述和详细说明。
+- 紧凑卡片在新标签页打开链接；概览不显示描述摘要，分类右侧“查看说明”按钮打开完整 Markdown 弹窗。
 - 使用 dnd-kit 手柄拖拽，支持鼠标、触屏长按和键盘排序；收藏与未收藏分别排序，个人偏好保存在 PostgreSQL。
 - 普通用户可维护自己的私有卡片、指定已登录过本站的成员只读分享；管理员可查看和维护所有公开、私有卡片。
 - 右侧抽屉编辑；Markdown 源码、实时预览和中文工具栏；首期不显示图片或执行 HTML。
@@ -83,8 +83,14 @@ Dockerfile 使用本机平台执行 npm 构建和 Go 交叉编译，最终运行
 
 ```text
 web/                      Vite + React + TypeScript + shadcn/ui + Tailwind CSS
+  src/App.tsx             登录状态入口，按用户切换页面
+  src/pages/              LoginPage、WorkspacePage 页面组合
+  src/hooks/              工作区数据与个人偏好、主题状态
+  src/components/workspace/ 顶栏、桌面与手机分类侧栏
+  src/components/cards/   可拖拽卡片、说明/删除弹窗、分享表单
+  src/components/         卡片编辑器、分类管理、Markdown 和基础 UI
+  src/lib/card-draft.ts    卡片草稿类型、转换与本地恢复
   src/gen/                从 protobuf 生成的类型与服务描述
-  src/components/         导航、Markdown、表单和 Radix/shadcn 基础组件
 backend/                  Go + ConnectRPC + pgx + Entra JWT 验证
   gen/                    生成的 Go 消息与服务绑定
   internal/store/         PostgreSQL 事务、查询和嵌入式 SQL 迁移

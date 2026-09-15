@@ -168,7 +168,7 @@ describe("团队导航", () => {
       screen.getByRole("button", { name: "使用 Microsoft 登录" }),
     ).toBeTruthy();
   });
-  it("普通用户可筛选和打开卡片，概览没有说明或公开卡片编辑入口", async () => {
+  it("普通用户可筛选、打开卡片及查看说明，不能编辑公开卡片", async () => {
     const user = userEvent.setup();
     mount();
     const link = await screen.findByRole("link", {
@@ -193,10 +193,22 @@ describe("团队导航", () => {
     expect(screen.getAllByRole("article")).toHaveLength(1);
     await user.click(screen.getByRole("button", { name: /运营系统/ }));
     expect(screen.getAllByRole("article")).toHaveLength(1);
-    expect(
-      screen.queryByRole("button", { name: "查看说明：示例系统" }),
-    ).toBeNull();
     expect(document.querySelector(".card-description")).toBeNull();
+    await user.click(
+      screen.getByRole("button", { name: "查看说明：示例系统" }),
+    );
+    const dialog = screen.getByRole("dialog");
+    expect(
+      await within(dialog).findByRole("heading", { name: "使用指南" }),
+    ).toBeTruthy();
+    expect(within(dialog).getByText("团队协作").tagName).toBe("STRONG");
+    expect(
+      within(dialog)
+        .getByRole("link", { name: "打开工具" })
+        .getAttribute("target"),
+    ).toBe("_blank");
+    await user.click(within(dialog).getByRole("button", { name: "关闭" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
   it("收藏置顶并保存个人偏好，失败时恢复原状态", async () => {
     const newer = {

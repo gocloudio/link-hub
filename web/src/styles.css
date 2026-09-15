@@ -655,6 +655,7 @@ h1 {
   gap: 7px;
 }
 .card-tags {
+  flex: 1;
   display: flex;
   gap: 5px;
   overflow: hidden;
@@ -672,6 +673,7 @@ h1 {
   white-space: nowrap;
 }
 .details-button {
+  flex-shrink: 0;
   position: relative;
   z-index: 1;
   display: flex;

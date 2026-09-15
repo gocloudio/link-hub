@@ -58,3 +58,14 @@
 - `make compose-up` 已更新本地单应用镜像；网站 `http://localhost:3180` 与 PostgreSQL `127.0.0.1:55484` 均健康。迁移 `002_card_preferences.sql`、`003_private_cards.sql` 应用成功，旧卡片保持内部公开。
 - 实测 `ListCards`、`ListMembers`、`GetCardPreferences`、`SetCardFavorite`、`SaveCardOrder` 的匿名请求全部返回 HTTP 401 / `unauthenticated`。
 - 本轮未重复使用真实 Entra 账号登录；角色与分享权限通过隔离数据库的后端集成测试验证。
+
+## 恢复查看说明入口
+
+- 分类标签右侧恢复“查看说明”按钮，弹窗使用已有安全 Markdown 渲染组件；卡片仍不显示描述摘要。
+- 前端 18 项测试通过，普通用户可打开说明、看到标题和加粗格式、关闭弹窗；打开工具仍使用新标签页。TypeScript 和生产构建通过。
+
+## 页面与组件拆分
+
+- `App.tsx` 仅保留登录门禁和按用户 ID 重建工作区；页面拆为 `LoginPage`、`WorkspacePage`。
+- 顶栏、分类侧栏、说明与删除弹窗、分享字段、可拖拽卡片分别独立。数据请求和个人偏好放入 `useWorkspaceData`，主题放入 `useTheme`，草稿逻辑放入 `lib/card-draft.ts`。
+- 保留原有 DOM 结构、样式类、API 与请求竞态处理。前端 18 项测试、TypeScript 和生产构建通过；覆盖登录与会话失效、收藏回滚、分类筛选、说明弹窗、私有分享、编辑草稿与删除操作。
