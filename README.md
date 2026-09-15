@@ -1,6 +1,6 @@
 # 团队导航 · Link Hub
 
-供团队共享常用系统、工具和文档的单页导航。免登录浏览，Microsoft Entra 管理员维护内容。
+供团队共享常用系统、工具和文档的单页导航。所有用户须通过 Microsoft Entra 登录，普通用户只读，管理员维护内容。
 
 ## 本地启动
 
@@ -120,7 +120,7 @@ make check
 ## 测试
 
 ```sh
-# React 交互测试：匿名浏览、管理员表单、删除限制、冲突草稿、Markdown 安全渲染
+# React 交互测试：登录门禁、普通用户只读、管理员表单、删除限制、冲突草稿、Markdown 安全渲染
 make webtest
 # 独立测试 PostgreSQL，不使用应用数据库
 make test-integration

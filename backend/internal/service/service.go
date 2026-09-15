@@ -12,6 +12,7 @@ import (
 	"connectrpc.com/connect"
 	pb "github.com/gocloudio/link-hub/backend/gen/linkhub/v1"
 	"github.com/gocloudio/link-hub/backend/internal/auth"
+	"github.com/gocloudio/link-hub/backend/internal/logging"
 	"github.com/gocloudio/link-hub/backend/internal/store"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -113,18 +114,9 @@ func rpcError(err error) error {
 		}
 	}
 	if code == connect.CodeInternal {
-		slog.Error("database operation failed", "error_type", fmtErrorType(err))
+		slog.Error("数据库操作失败", "error_type", logging.ErrorKind(err))
 	}
 	return connect.NewError(code, errors.New(message))
-}
-
-// 日志不输出数据库 URL、SQL 参数或用户填写的描述。
-func fmtErrorType(err error) string {
-	var pg *pgconn.PgError
-	if errors.As(err, &pg) {
-		return "postgres:" + pg.Code
-	}
-	return "database_unavailable"
 }
 
 func (s *Service) ListCategories(ctx context.Context, _ *connect.Request[pb.ListCategoriesRequest]) (*connect.Response[pb.ListCategoriesResponse], error) {

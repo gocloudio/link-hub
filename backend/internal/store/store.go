@@ -5,9 +5,11 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sort"
 	"time"
 
+	"github.com/gocloudio/link-hub/backend/internal/logging"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -33,6 +35,8 @@ type Category struct {
 type Store struct{ Pool *pgxpool.Pool }
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {
+	started := time.Now()
+	slog.Info("正在连接 PostgreSQL")
 	cfg, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("DATABASE_URL 格式错误")
@@ -42,12 +46,15 @@ func Open(ctx context.Context, databaseURL string) (*Store, error) {
 	cfg.ConnConfig.ConnectTimeout = 5 * time.Second
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
+		slog.Error("数据库连接池初始化失败", "error_type", logging.ErrorKind(err))
 		return nil, fmt.Errorf("数据库连接池初始化失败")
 	}
 	if err = pool.Ping(ctx); err != nil {
 		pool.Close()
+		slog.Error("PostgreSQL 连接失败", "error_type", logging.ErrorKind(err), "duration_ms", time.Since(started).Milliseconds())
 		return nil, fmt.Errorf("无法连接 PostgreSQL，请检查连接配置和服务状态")
 	}
+	slog.Info("PostgreSQL 连接成功", "duration_ms", time.Since(started).Milliseconds(), "max_connections", cfg.MaxConns)
 	return &Store{Pool: pool}, nil
 }
 func (s *Store) Close() { s.Pool.Close() }
@@ -76,6 +83,7 @@ func (s *Store) Migrate(ctx context.Context) error {
 		if exists {
 			continue
 		}
+		slog.Info("正在应用数据库迁移", "migration", file.Name())
 		data, err := migrations.ReadFile("migrations/" + file.Name())
 		if err != nil {
 			return err

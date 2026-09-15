@@ -15,7 +15,6 @@ import {
   FolderOpen,
   Grid2X2,
   LayoutGrid,
-  LogIn,
   LogOut,
   Menu,
   Moon,
@@ -70,6 +69,47 @@ function cardDraft(card: Card): Draft {
 }
 export default function App() {
   const auth = useAuth();
+  if (!auth.ready || !auth.user) {
+    return (
+      <main className="login-page">
+        <section
+          className="login-dialog login-panel"
+          aria-labelledby="login-title"
+        >
+          <div className="login-illustration">
+            <ShieldCheck />
+          </div>
+          <div className="modal-eyebrow">LINK HUB / WORKSPACE</div>
+          <h1 id="login-title">团队导航</h1>
+          <p>登录团队账号，访问常用系统、工具与文档。</p>
+          {!auth.ready ? (
+            <p role="status">正在验证登录状态…</p>
+          ) : (
+            <Button onClick={() => void auth.login()}>
+              <span className="microsoft-logo" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+              使用 Microsoft 登录
+              <ArrowUpRight />
+            </Button>
+          )}
+          {auth.error && (
+            <p className="field-error" role="alert">
+              {auth.error}
+            </p>
+          )}
+          <p>普通成员可查看，管理员可维护内容。</p>
+        </section>
+      </main>
+    );
+  }
+  return <Workspace key={auth.user.id} />;
+}
+function Workspace() {
+  const auth = useAuth();
   const admin = !!auth.user?.isAdmin;
   const [cards, setCards] = useState<Card[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -93,15 +133,15 @@ export default function App() {
   const [deleteError, setDeleteError] = useState("");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
-  const [login, setLogin] = useState(false);
   const restored = useRef(false);
   const loadVersion = useRef(0);
+  const { run } = auth;
   const refresh = useCallback(async () => {
     const version = ++loadVersion.current;
     try {
       const [list, groups] = await Promise.all([
-        api.listCards({}),
-        api.listCategories({}),
+        run((options) => api.listCards({}, options)),
+        run((options) => api.listCategories({}, options)),
       ]);
       if (version !== loadVersion.current) return;
       setCards(list.cards);
@@ -115,12 +155,15 @@ export default function App() {
     } finally {
       if (version === loadVersion.current) setLoading(false);
     }
-  }, []);
+  }, [run]);
   useEffect(() => {
     void refresh();
     const onFocus = () => void refresh();
     window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
+    return () => {
+      ++loadVersion.current;
+      window.removeEventListener("focus", onFocus);
+    };
   }, [refresh]);
   useEffect(() => {
     if (admin && !restored.current) {
@@ -288,31 +331,19 @@ export default function App() {
               </button>
             </div>
             <span className="action-divider" />
-            {auth.user ? (
-              <div className="user-menu">
-                <span title={auth.user.username}>
-                  {auth.user.name || "团队成员"}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="退出登录"
-                  onClick={() => void auth.logout()}
-                >
-                  <LogOut />
-                </Button>
-              </div>
-            ) : (
+            <div className="user-menu">
+              <span title={auth.user?.username}>
+                {auth.user?.name || "团队成员"}
+              </span>
               <Button
-                variant="outline"
-                className="login-button"
-                disabled={!auth.ready}
-                onClick={() => setLogin(true)}
+                variant="ghost"
+                size="icon"
+                aria-label="退出登录"
+                onClick={() => void auth.logout()}
               >
-                <LogIn />
-                管理员登录
+                <LogOut />
               </Button>
-            )}
+            </div>
           </div>
         </header>
         <main id="main" tabIndex={-1}>
@@ -536,7 +567,7 @@ export default function App() {
           )}
         </DialogContent>
       </Dialog>
-      {draft && (
+      {admin && draft && (
         <CardEditor
           initial={draft}
           categories={categories}
@@ -562,7 +593,7 @@ export default function App() {
           }}
         />
       )}
-      {categoryManager && (
+      {admin && categoryManager && (
         <CategoryManager
           categories={categories}
           onClose={() => setCategoryManager(false)}
@@ -570,7 +601,7 @@ export default function App() {
         />
       )}
       <Dialog
-        open={!!deleting}
+        open={admin && !!deleting}
         onOpenChange={(open) => {
           if (!open && !busy) setDeleting(null);
         }}
@@ -606,33 +637,6 @@ export default function App() {
           )}
           {!admin && (
             <Button onClick={() => void auth.login()}>重新登录</Button>
-          )}
-        </DialogContent>
-      </Dialog>
-      <Dialog open={login} onOpenChange={setLogin}>
-        <DialogContent className="login-dialog">
-          <div className="login-illustration">
-            <ShieldCheck />
-          </div>
-          <div className="modal-eyebrow">仅管理员需要登录</div>
-          <DialogTitle>连接你的团队账号</DialogTitle>
-          <DialogDescription>
-            使用 Microsoft Entra 登录，维护团队共享的工具与分类。
-          </DialogDescription>
-          <Button onClick={() => void auth.login()}>
-            <span className="microsoft-logo">
-              <i />
-              <i />
-              <i />
-              <i />
-            </span>
-            使用 Microsoft 登录
-            <ArrowUpRight />
-          </Button>
-          {auth.error && (
-            <p className="field-error" role="alert">
-              {auth.error}
-            </p>
           )}
         </DialogContent>
       </Dialog>

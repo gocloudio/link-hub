@@ -2067,3 +2067,24 @@ textarea::placeholder {
 body {
   color: var(--text);
 }
+
+/* 登录完成前不挂载工作空间或加载团队数据。 */
+.login-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 0;
+}
+.login-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+}
+.login-panel h1 {
+  margin: 12px 0;
+  font-size: 26px;
+}
+.login-panel > .button {
+  width: 100%;
+  margin: 24px 0 12px;
+}

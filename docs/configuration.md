@@ -22,6 +22,26 @@ Go 优先读取不带 `VITE_` 的同名配置。此处保留参考项目的环�
 
 `scripts/setup-env.py` 默认读取相邻 `device-manager-v3/.env`，仅导入白名单内的 Entra ID、scope 和角色变量，设置独立数据库密码。它不会复制 Graph client secret、旧项目的数据库连接或其他账号配置；输出不包含变量值，生成文件权限为 `0600`。
 
+## 运行日志
+
+后端使用 Go `slog` 向标准错误输出 JSON 日志，可由 Docker 或 Kubernetes 直接采集。
+
+- 启动：配置加载、PostgreSQL 连接、数据库迁移及耗时；端口绑定成功后记录启动完成，停止时记录关闭过程。
+- RPC：记录 `request_id`、`procedure`、Connect 状态 `code` 和 `duration_ms`。正常请求为 INFO，参数或权限等错误为 WARN，内部错误和服务不可用为 ERROR。响应 `X-Request-ID` 可用于查询对应日志。
+- 数据库：记录安全的 `error_type`，如 `dns_lookup_failed`、`connection_refused`、`timeout`、`postgres:28P01`（认证失败）、`postgres:3D000`（数据库不存在）。健康检查成功不记录日志，失败记录 WARN。
+- 不记录完整数据库连接字符串、密码、Authorization/Cookie、请求正文或原始数据库错误详情。
+
+```bash
+# 本地 Compose
+docker compose logs -f --tail=100 app
+
+# Kubernetes
+kubectl logs -n link-hub deployment/link-hub --tail=100 -f
+
+# 排查启动后退出的容器
+kubectl logs -n link-hub deployment/link-hub --previous --tail=100
+```
+
 ## Entra 应用设置
 
 沿用 `device-manager-v3` 的 SPA 与 API 应用。登录方式为 MSAL `loginRedirect`，PKCE 授权码流程。回调地址为当前页面的 `origin + '/'`。
@@ -29,7 +49,7 @@ Go 优先读取不带 `VITE_` 的同名配置。此处保留参考项目的环�
 1. SPA 应用需要登记当前页面地址，例如 `http://localhost:3180/`；正式部署使用实际 HTTPS 地址。
 2. 前端应具备 API 的委托权限，例如 `api://<API 应用 ID>/dm.access`。
 3. API 应签发 v2 access token，管理员用户应在该 API 应用的角色分配中获得 `dm.admin`（或配置的角色）。
-4. 浏览不要求登录。登录成功但缺少管理员角色时，页面保持浏览权限并显示提示。
+4. 所有用户必须登录才能查看分类、卡片、说明和链接。已登录但缺少管理员角色的用户只读；退出或身份失效后返回登录页。
 
 项目不会自动修改 Entra 应用注册或角色分配。2026-09-15 用户已确认实际登录成功。
 
@@ -37,8 +57,8 @@ Go 优先读取不带 `VITE_` 的同名配置。此处保留参考项目的环�
 
 所有 RPC 位于 `/linkhub.v1.HubService/`：
 
-- 匿名：`ListCategories`、`ListCards`、`GetCard`。
-- 登录用户：`GetMe`。
+- 登录用户：`GetMe`、`ListCategories`、`ListCards`、`GetCard`。
+- 未登录：所有业务 RPC 均返回 `unauthenticated`；仅登录页面静态资源、公开登录配置及健康探针可访问。
 - 管理员：卡片、分类的所有创建、修改和删除方法。
 
 服务端用固定租户的 Microsoft JWKS 验证 RS256 签名，并验证 issuer、audience、有效期、v2 token、租户、用户 ID、scope。管理员操作额外检查角色；浏览器是否显示编辑按钮不影响后端的判断。

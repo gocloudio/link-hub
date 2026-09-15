@@ -26,7 +26,7 @@ type Entra struct {
 	tenant, scope, role string
 }
 
-// 固定租户及其签名密钥端点；登录服务不可用时，匿名浏览仍不依赖外部网络。
+// 固定租户及其签名密钥端点，所有业务接口均验证团队登录身份。
 func NewEntra(ctx context.Context, tenant, audience, scope, role string) *Entra {
 	ctx = oidc.ClientContext(ctx, &http.Client{Timeout: 10 * time.Second})
 	issuer := "https://login.microsoftonline.com/" + tenant + "/v2.0"

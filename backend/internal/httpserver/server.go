@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -15,6 +16,7 @@ import (
 	"github.com/gocloudio/link-hub/backend/gen/linkhub/v1/linkhubv1connect"
 	"github.com/gocloudio/link-hub/backend/internal/auth"
 	"github.com/gocloudio/link-hub/backend/internal/config"
+	"github.com/gocloudio/link-hub/backend/internal/logging"
 	"github.com/gocloudio/link-hub/backend/internal/service"
 	"github.com/gocloudio/link-hub/backend/internal/store"
 )
@@ -22,10 +24,6 @@ import (
 func authorization(verifier auth.Verifier) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			switch req.Spec().Procedure {
-			case linkhubv1connect.HubServiceListCategoriesProcedure, linkhubv1connect.HubServiceListCardsProcedure, linkhubv1connect.HubServiceGetCardProcedure:
-				return next(ctx, req)
-			}
 			scheme, token, ok := strings.Cut(req.Header().Get("Authorization"), " ")
 			if !ok || !strings.EqualFold(scheme, "Bearer") || token == "" || verifier == nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, auth.ErrInvalidToken)
@@ -34,8 +32,16 @@ func authorization(verifier auth.Verifier) connect.UnaryInterceptorFunc {
 			if err != nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, auth.ErrInvalidToken)
 			}
-			if req.Spec().Procedure != linkhubv1connect.HubServiceGetMeProcedure && !p.IsAdmin {
-				return nil, connect.NewError(connect.CodePermissionDenied, errors.New("当前账号没有管理员权限"))
+			switch req.Spec().Procedure {
+			case linkhubv1connect.HubServiceGetMeProcedure,
+				linkhubv1connect.HubServiceListCategoriesProcedure,
+				linkhubv1connect.HubServiceListCardsProcedure,
+				linkhubv1connect.HubServiceGetCardProcedure:
+				// All reads require a valid team login; only writes require an admin role.
+			default:
+				if !p.IsAdmin {
+					return nil, connect.NewError(connect.CodePermissionDenied, errors.New("当前账号没有管理员权限"))
+				}
 			}
 			return next(auth.WithPrincipal(ctx, p), req)
 		}
@@ -44,13 +50,14 @@ func authorization(verifier auth.Verifier) connect.UnaryInterceptorFunc {
 
 func New(c config.Config, s *store.Store, verifier auth.Verifier) http.Handler {
 	mux := http.NewServeMux()
-	base, handler := linkhubv1connect.NewHubServiceHandler(&service.Service{Store: s}, connect.WithInterceptors(authorization(verifier)), connect.WithReadMaxBytes(256<<10))
+	base, handler := linkhubv1connect.NewHubServiceHandler(&service.Service{Store: s}, connect.WithInterceptors(requestLogging(slog.Default()), authorization(verifier)), connect.WithReadMaxBytes(256<<10))
 	mux.Handle(base, handler)
 	mux.HandleFunc("GET /api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 		defer cancel()
 		w.Header().Set("Content-Type", "application/json")
 		if err := s.Pool.Ping(ctx); err != nil {
+			slog.Warn("数据库健康检查失败", "error_type", logging.ErrorKind(err))
 			w.WriteHeader(http.StatusServiceUnavailable)
 			w.Write([]byte(`{"status":"unavailable"}`))
 			return

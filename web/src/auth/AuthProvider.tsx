@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
   type ReactNode,
 } from "react";
 import type { PublicClientApplication, AccountInfo } from "@azure/msal-browser";
@@ -63,7 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function accessToken(account?: AccountInfo) {
     const { msal, config } = await initialize();
     const active = account ?? msal.getActiveAccount();
-    if (!active) throw new Error("请先登录管理员账号。填写的内容已保留。");
+    if (!active)
+      throw new ConnectError("请先登录团队账号。", Code.Unauthenticated);
     return (
       await msal.acquireTokenSilent({
         account: active,
@@ -106,6 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
   async function logout() {
+    setUser(null);
+    setError("");
+    try {
+      sessionStorage.removeItem("link-hub-card-draft");
+    } catch {}
     try {
       const { msal } = await initialize();
       await msal.logoutRedirect({ account: msal.getActiveAccount() });
@@ -113,27 +120,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(errorText(e));
     }
   }
-  async function run<T>(
-    operation: (options: CallOptions) => Promise<T>,
-  ): Promise<T> {
-    try {
-      return await operation(bearer(await accessToken()));
-    } catch (e) {
-      if (
-        interactionRequired(e) ||
-        (e instanceof ConnectError &&
-          [Code.Unauthenticated, Code.PermissionDenied].includes(e.code))
-      ) {
-        setUser(null);
-        const message = interactionRequired(e)
-          ? "登录已失效，请重新登录。填写的内容已保留。"
-          : errorText(e);
-        setError(message);
-        throw new Error(message);
+  const run = useCallback(
+    async <T,>(operation: (options: CallOptions) => Promise<T>): Promise<T> => {
+      try {
+        return await operation(bearer(await accessToken()));
+      } catch (e) {
+        if (
+          interactionRequired(e) ||
+          (e instanceof ConnectError && e.code === Code.Unauthenticated)
+        ) {
+          setUser(null);
+          const message = interactionRequired(e)
+            ? "登录已失效，请重新登录。填写的内容已保留。"
+            : errorText(e);
+          setError(message);
+          throw new Error(message);
+        }
+        if (e instanceof ConnectError && e.code === Code.PermissionDenied) {
+          setUser((current) =>
+            current ? { ...current, isAdmin: false } : null,
+          );
+          setError(errorText(e));
+        }
+        throw e;
       }
-      throw e;
-    }
-  }
+    },
+    [],
+  );
   return (
     <AuthContext.Provider value={{ user, ready, error, login, logout, run }}>
       {children}

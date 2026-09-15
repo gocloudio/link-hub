@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   cleanup,
+  act,
   render,
   screen,
   waitFor,
@@ -55,12 +56,17 @@ const card = create(CardSchema, {
   createdAt: { seconds: 100n },
   updatedAt: { seconds: 200n },
 });
-function mount(admin = false) {
+function mount(admin: boolean | null = false, ready = true) {
   const auth = {
-    user: admin
-      ? create(GetMeResponseSchema, { name: "测试管理员", isAdmin: true })
-      : null,
-    ready: true,
+    user:
+      admin === null
+        ? null
+        : create(GetMeResponseSchema, {
+            id: "member",
+            name: admin ? "测试管理员" : "测试成员",
+            isAdmin: admin,
+          }),
+    ready,
     error: "",
     login: vi.fn(),
     logout: vi.fn(),
@@ -68,11 +74,12 @@ function mount(admin = false) {
       operation({ headers: { Authorization: "Bearer test" } }),
     ),
   };
-  return render(
+  const result = render(
     <AuthContext.Provider value={auth as React.ContextType<typeof AuthContext>}>
       <App />
     </AuthContext.Provider>,
   );
+  return { ...result, auth };
 }
 beforeEach(() => {
   vi.clearAllMocks();
@@ -85,7 +92,60 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("团队导航", () => {
-  it("匿名浏览去重、多分类筛选、卡片新标签页与独立说明", async () => {
+  it("未登录不展示或请求团队数据，可发起 Microsoft 登录", async () => {
+    const { auth } = mount(null);
+    expect(screen.queryByRole("article")).toBeNull();
+    expect(screen.queryByRole("navigation", { name: "工具分类" })).toBeNull();
+    expect(api.listCards).not.toHaveBeenCalled();
+    expect(api.listCategories).not.toHaveBeenCalled();
+    await userEvent.click(
+      screen.getByRole("button", { name: "使用 Microsoft 登录" }),
+    );
+    expect(auth.login).toHaveBeenCalledOnce();
+  });
+  it("身份初始化完成之前不加载数据", () => {
+    mount(false, false);
+    expect(screen.getByRole("status").textContent).toContain(
+      "正在验证登录状态",
+    );
+    expect(api.listCards).not.toHaveBeenCalled();
+    expect(api.listCategories).not.toHaveBeenCalled();
+  });
+  it("会话失效后移除卡片与说明，迟到的请求不能恢复内容", async () => {
+    const { auth, rerender } = mount();
+    await screen.findByRole("article");
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看说明：示例系统" }),
+    );
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    let complete!: (result: never) => void;
+    vi.mocked(api.listCards).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          complete = resolve;
+        }),
+    );
+    act(() => {
+      window.dispatchEvent(new Event("focus"));
+    });
+    rerender(
+      <AuthContext.Provider
+        value={{ ...auth, user: null } as React.ContextType<typeof AuthContext>}
+      >
+        <App />
+      </AuthContext.Provider>,
+    );
+    await act(async () => {
+      complete({ cards: [card] } as never);
+    });
+    expect(screen.queryByRole("article")).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.queryByText("示例系统")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "使用 Microsoft 登录" }),
+    ).toBeTruthy();
+  });
+  it("普通用户登录后只读、多分类筛选、卡片新标签页与独立说明", async () => {
     const user = userEvent.setup();
     mount();
     const link = await screen.findByRole("link", {
@@ -94,6 +154,18 @@ describe("团队导航", () => {
     expect(link.getAttribute("target")).toBe("_blank");
     expect(screen.getAllByRole("article")).toHaveLength(1);
     expect(screen.queryByRole("button", { name: "添加卡片" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "管理分类" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "编辑卡片：示例系统" }),
+    ).toBeNull();
+    expect(api.listCards).toHaveBeenCalledWith(
+      {},
+      { headers: { Authorization: "Bearer test" } },
+    );
+    expect(api.listCategories).toHaveBeenCalledWith(
+      {},
+      { headers: { Authorization: "Bearer test" } },
+    );
     await user.click(screen.getByRole("button", { name: /开发工具/ }));
     expect(screen.getAllByRole("article")).toHaveLength(1);
     await user.click(screen.getByRole("button", { name: /运营系统/ }));
@@ -130,9 +202,13 @@ describe("团队导航", () => {
     );
     expect(api.createCard).not.toHaveBeenCalled();
     await user.click(screen.getByRole("checkbox", { name: "开发工具" }));
-    const source = await screen.findByRole("textbox", {
-      name: "Markdown 描述",
-    });
+    const source = await screen.findByRole(
+      "textbox",
+      {
+        name: "Markdown 描述",
+      },
+      { timeout: 5000 },
+    );
     await user.type(source, "**说明正文**");
     await user.click(screen.getByRole("button", { name: "保存卡片" }));
     await waitFor(() =>

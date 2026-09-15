@@ -45,7 +45,7 @@ web
 - 管理员使用 Microsoft Entra 登录，实现和环境变量参考 `/Users/jizhiyonggan/Documents/Code/device-manager-v3`。
 - 管理员可以新增、改名、删除分类，每张卡片必须至少选择一个分类。
 - 仅可删除无卡片关联的分类；有关联时需先调整卡片分类，并确保每张卡片至少保留一个分类。
-- 普通浏览者不需要登录，只有管理操作需要管理员登录。
+- 所有用户登录后才能查看；普通用户只读，管理员可编辑。
 - 部署采用 Docker Compose，本机验证地址为 http://localhost:3180；团队访问域名及反向代理由实际部署环境配置。
 - 已完成七轮需求访谈，需求整理在 `docs/requirements.md`。已制作 `prototype/` 下的 HTML、CSS、JavaScript 交互原型；现已实现正式 React 页面、Go/ConnectRPC、PostgreSQL、Entra 登录与单镜像部署。
 

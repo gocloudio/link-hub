@@ -104,6 +104,24 @@ func TestHTTPAuthorizationAndCRUD(t *testing.T) {
 	if err != nil || me.Msg.IsAdmin {
 		t.Fatal("viewer authorization", err)
 	}
+	for _, token := range []string{"", "invalid"} {
+		reads := []func() error{
+			func() error { _, e := client.ListCards(ctx, request(&pb.ListCardsRequest{}, token)); return e },
+			func() error {
+				_, e := client.ListCategories(ctx, request(&pb.ListCategoriesRequest{}, token))
+				return e
+			},
+			func() error {
+				_, e := client.GetCard(ctx, request(&pb.GetCardRequest{Id: uuid.NewString()}, token))
+				return e
+			},
+		}
+		for i, read := range reads {
+			if code := connect.CodeOf(read()); code != connect.CodeUnauthenticated {
+				t.Fatalf("token %q read %d: got %v", token, i, code)
+			}
+		}
+	}
 	cat, err := client.CreateCategory(ctx, request(&pb.CreateCategoryRequest{Name: "开发工具"}, "admin"))
 	if err != nil {
 		t.Fatal(err)
@@ -121,14 +139,14 @@ func TestHTTPAuthorizationAndCRUD(t *testing.T) {
 	if len(card.CategoryIds) != 1 {
 		t.Fatal("must dedup input categories")
 	}
-	list, err := client.ListCards(ctx, request(&pb.ListCardsRequest{}, ""))
+	list, err := client.ListCards(ctx, request(&pb.ListCardsRequest{}, "viewer"))
 	if err != nil || len(list.Msg.Cards) != 1 {
-		t.Fatal("anonymous list", err)
+		t.Fatal("viewer list", err)
 	}
-	if _, err = client.GetCard(ctx, request(&pb.GetCardRequest{Id: card.Id}, "")); err != nil {
-		t.Fatal("anonymous detail", err)
+	if _, err = client.GetCard(ctx, request(&pb.GetCardRequest{Id: card.Id}, "viewer")); err != nil {
+		t.Fatal("viewer detail", err)
 	}
-	cats, err := client.ListCategories(ctx, request(&pb.ListCategoriesRequest{}, ""))
+	cats, err := client.ListCategories(ctx, request(&pb.ListCategoriesRequest{}, "viewer"))
 	if err != nil || cats.Msg.Categories[0].CardCount != 1 {
 		t.Fatal("category count", err)
 	}
