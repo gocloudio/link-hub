@@ -178,12 +178,12 @@ function Workspace() {
     document.documentElement.classList.toggle("dark", theme === "dark");
     try {
       localStorage.setItem("link-hub-theme", theme);
-    } catch {}
+    } catch { }
   }, [theme]);
   useEffect(() => {
     try {
       sessionStorage.setItem("link-hub-category", selected);
-    } catch {}
+    } catch { }
   }, [selected]);
   useEffect(() => {
     if (!toast) return;
@@ -429,9 +429,6 @@ function Workspace() {
                       <ArrowUpRight />
                     </span>
                   </div>
-                  <p className="card-description">
-                    {excerpt(card.descriptionMarkdown) || "暂无说明"}
-                  </p>
                   <div className="card-footer">
                     <div className="card-tags">
                       {categories
