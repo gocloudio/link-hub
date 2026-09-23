@@ -51,7 +51,6 @@ export function CardSharingFields({
               type="radio"
               name="visibility"
               checked={!isPrivate}
-              disabled={!auth.user?.isAdmin}
               onChange={() => onChange({ isPrivate: false })}
             />
             内部公开
@@ -69,7 +68,7 @@ export function CardSharingFields({
         <p className="field-hint">
           {isPrivate
             ? "创建者和指定成员可见；管理员可查看和维护。普通分享接收者只读。"
-            : "所有登录用户可见，由管理员维护。"}
+            : "所有登录用户可见，创建者和管理员可维护。"}
         </p>
       </fieldset>
       {isPrivate && (

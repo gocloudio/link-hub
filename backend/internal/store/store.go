@@ -194,9 +194,6 @@ func (s *Store) SaveCard(ctx context.Context, c Card, expected *time.Time, actor
 		c.ID = uuid.NewString()
 		c.OwnerID = actor.ID
 	}
-	if !c.IsPrivate && !actor.IsAdmin {
-		return c, ErrForbidden
-	}
 	err := s.transaction(ctx, func(tx pgx.Tx) error {
 		if creating {
 			if _, err := tx.Exec(ctx, `INSERT INTO cards(id,name,description_markdown,url,is_private,owner_id) VALUES($1,$2,$3,$4,$5,$6)`, c.ID, c.Name, c.Description, c.URL, c.IsPrivate, c.OwnerID); err != nil {
@@ -204,14 +201,13 @@ func (s *Store) SaveCard(ctx context.Context, c Card, expected *time.Time, actor
 			}
 		} else {
 			var current time.Time
-			var private bool
 			var owner string
-			if err := tx.QueryRow(ctx, `SELECT updated_at,is_private,COALESCE(owner_id::text,'') FROM cards WHERE id=$1 FOR UPDATE`, c.ID).Scan(&current, &private, &owner); errors.Is(err, pgx.ErrNoRows) {
+			if err := tx.QueryRow(ctx, `SELECT updated_at,COALESCE(owner_id::text,'') FROM cards WHERE id=$1 FOR UPDATE`, c.ID).Scan(&current, &owner); errors.Is(err, pgx.ErrNoRows) {
 				return ErrNotFound
 			} else if err != nil {
 				return err
 			}
-			if !actor.IsAdmin && (!private || owner != actor.ID) {
+			if !actor.IsAdmin && owner != actor.ID {
 				return ErrForbidden
 			}
 			if owner == "" && c.IsPrivate {
@@ -251,7 +247,7 @@ func (s *Store) SaveCard(ctx context.Context, c Card, expected *time.Time, actor
 }
 func (s *Store) DeleteCard(ctx context.Context, id string, actor Actor) error {
 	return s.transaction(ctx, func(tx pgx.Tx) error {
-		r, err := tx.Exec(ctx, `DELETE FROM cards WHERE id=$1 AND ((is_private AND owner_id=$2) OR $3)`, id, actor.ID, actor.IsAdmin)
+		r, err := tx.Exec(ctx, `DELETE FROM cards WHERE id=$1 AND (owner_id=$2 OR $3)`, id, actor.ID, actor.IsAdmin)
 		if err == nil && r.RowsAffected() == 0 {
 			return ErrNotFound
 		}

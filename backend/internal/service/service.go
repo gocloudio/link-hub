@@ -85,7 +85,7 @@ func actorFromContext(ctx context.Context) store.Actor {
 	return store.Actor{ID: p.ID, IsAdmin: p.IsAdmin}
 }
 func cardProto(c store.Card, actor store.Actor) *pb.Card {
-	canEdit := actor.IsAdmin || (c.IsPrivate && c.OwnerID == actor.ID)
+	canEdit := actor.IsAdmin || (c.OwnerID != "" && c.OwnerID == actor.ID)
 	var shared []string
 	if canEdit {
 		shared = c.SharedUserIDs
@@ -195,9 +195,6 @@ func (s *Service) GetMe(ctx context.Context, _ *connect.Request[pb.GetMeRequest]
 	return connect.NewResponse(&pb.GetMeResponse{Id: p.ID, Name: p.Name, Username: p.Username, IsAdmin: p.IsAdmin}), nil
 }
 func (s *Service) CreateCard(ctx context.Context, req *connect.Request[pb.CreateCardRequest]) (*connect.Response[pb.CreateCardResponse], error) {
-	if !actorFromContext(ctx).IsAdmin && !req.Msg.Card.GetIsPrivate() {
-		return nil, rpcError(store.ErrForbidden)
-	}
 	c, err := validateCard(req.Msg.Card)
 	if err != nil {
 		return nil, err
@@ -209,9 +206,6 @@ func (s *Service) CreateCard(ctx context.Context, req *connect.Request[pb.Create
 	return connect.NewResponse(&pb.CreateCardResponse{Card: cardProto(c, actorFromContext(ctx))}), nil
 }
 func (s *Service) UpdateCard(ctx context.Context, req *connect.Request[pb.UpdateCardRequest]) (*connect.Response[pb.UpdateCardResponse], error) {
-	if !actorFromContext(ctx).IsAdmin && !req.Msg.Card.GetIsPrivate() {
-		return nil, rpcError(store.ErrForbidden)
-	}
 	if err := validateID(req.Msg.Id); err != nil {
 		return nil, err
 	}

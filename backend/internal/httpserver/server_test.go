@@ -94,7 +94,8 @@ func TestHTTPAuthorizationAndCRUD(t *testing.T) {
 		}
 		for i, call := range mutations {
 			expected := want
-			if token == "viewer" && i == 2 {
+			// 卡片增删改对成员开放，空请求会先被参数校验拒绝。
+			if token == "viewer" && i < 3 {
 				expected = connect.CodeInvalidArgument
 			}
 			if code := connect.CodeOf(call()); code != expected {
