@@ -54,9 +54,9 @@ export function WorkspacePage() {
     if (!restored.current) {
       restored.current = true;
       const saved = readDraft();
-      if (saved && (admin || saved.isPrivate)) setDraft(saved);
+      if (saved) setDraft(saved);
     }
-  }, [admin]);
+  }, []);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(""), 3500);
@@ -121,14 +121,14 @@ export function WorkspacePage() {
             </div>
             <Button onClick={() => setDraft(newDraft(admin))}>
               <Plus />
-              {admin ? "添加卡片" : "添加私有卡片"}
+              添加卡片
             </Button>
           </section>
           {(error || auth.error || (auth.user && !admin)) && (
             <div className="page-notice" role="status">
               {error ||
                 auth.error ||
-                "公开卡片和收到的分享只读；你可以添加私有卡片，管理自己的收藏和顺序。"}
+                "他人维护的公开卡片和收到的分享只读；你可以添加公开或私有卡片，管理自己的收藏和顺序。"}
               {error && (
                 <Button variant="ghost" onClick={() => void refresh()}>
                   <RefreshCw />
@@ -186,7 +186,7 @@ export function WorkspacePage() {
                   ? "请检查连接后重试。"
                   : admin
                     ? "先准备好分类，再添加团队常用的系统或工具。"
-                    : "你可以添加自己的私有卡片，或等待管理员添加公开工具。"}
+                    : "你可以添加自己的公开或私有卡片，或等待管理员添加公开工具。"}
               </p>
               {admin && !error && (
                 <Button

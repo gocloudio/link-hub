@@ -176,7 +176,6 @@ describe("团队导航", () => {
     });
     expect(link.getAttribute("target")).toBe("_blank");
     expect(screen.getAllByRole("article")).toHaveLength(1);
-    expect(screen.queryByRole("button", { name: "添加卡片" })).toBeNull();
     expect(screen.queryByRole("button", { name: "管理分类" })).toBeNull();
     expect(
       screen.queryByRole("button", { name: "编辑卡片：示例系统" }),
@@ -255,20 +254,20 @@ describe("团队导航", () => {
         .textContent,
     ).toBe("示例系统");
   });
-  it("普通用户可以创建并分享私有卡片，不能选择内部公开", async () => {
+  it("普通用户可以创建并分享私有卡片，也可以选择内部公开", async () => {
     vi.mocked(api.createCard).mockResolvedValue({
       card: { ...card, name: "个人工具", isPrivate: true, canEdit: true },
     } as never);
     mount();
     await screen.findByRole("article");
-    await userEvent.click(screen.getByRole("button", { name: "添加私有卡片" }));
+    await userEvent.click(screen.getByRole("button", { name: "添加卡片" }));
     expect(screen.getByRole("radio", { name: "私有" })).toHaveProperty(
       "checked",
       true,
     );
     expect(screen.getByRole("radio", { name: "内部公开" })).toHaveProperty(
       "disabled",
-      true,
+      false,
     );
     await userEvent.type(screen.getByLabelText(/^名称/), "个人工具");
     await userEvent.type(
@@ -286,6 +285,29 @@ describe("团队导航", () => {
           card: expect.objectContaining({
             isPrivate: true,
             sharedUserIds: ["dddddddd-dddd-4ddd-8ddd-dddddddddddd"],
+          }),
+        },
+        expect.anything(),
+      ),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await userEvent.click(screen.getByRole("button", { name: "添加卡片" }));
+    await userEvent.click(screen.getByRole("radio", { name: "内部公开" }));
+    expect(screen.queryByRole("checkbox", { name: /团队同事/ })).toBeNull();
+    await userEvent.type(screen.getByLabelText(/^名称/), "团队工具");
+    await userEvent.type(
+      screen.getByRole("textbox", { name: /^链接/ }),
+      "https://team.example.com",
+    );
+    await userEvent.click(screen.getByRole("checkbox", { name: "开发工具" }));
+    await userEvent.click(screen.getByRole("button", { name: "保存卡片" }));
+    await waitFor(() =>
+      expect(api.createCard).toHaveBeenLastCalledWith(
+        {
+          card: expect.objectContaining({
+            name: "团队工具",
+            isPrivate: false,
+            sharedUserIds: [],
           }),
         },
         expect.anything(),

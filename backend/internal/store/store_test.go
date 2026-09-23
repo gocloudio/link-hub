@@ -124,6 +124,59 @@ func TestCardCategoryTransactions(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+func TestMemberCardOwnership(t *testing.T) {
+	s := testStore(t)
+	ctx := context.Background()
+	member := Actor{ID: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"}
+	stranger := Actor{ID: "dddddddd-dddd-4ddd-8ddd-dddddddddddd"}
+	cat, err := s.SaveCategory(ctx, "", "分类")
+	if err != nil {
+		t.Fatal(err)
+	}
+	made, err := s.SaveCard(ctx, Card{Name: "成员公开", URL: "https://example.com", CategoryIDs: []string{cat.ID}}, nil, member)
+	if err != nil {
+		t.Fatal("member creates public card", err)
+	}
+	if made.IsPrivate || made.OwnerID != member.ID {
+		t.Fatalf("public owner: %+v", made)
+	}
+	made.Name = "抢占"
+	if _, err = s.SaveCard(ctx, made, &made.UpdatedAt, stranger); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("stranger edits public: %v", err)
+	}
+	if err = s.DeleteCard(ctx, made.ID, stranger); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("stranger deletes public: %v", err)
+	}
+	made.Name = "成员改名"
+	edited, err := s.SaveCard(ctx, made, &made.UpdatedAt, member)
+	if err != nil || edited.OwnerID != member.ID {
+		t.Fatalf("owner edits public: %v", err)
+	}
+	if _, err = s.SaveCard(ctx, Card{ID: edited.ID, Name: "管理员接管", URL: "https://example.com", CategoryIDs: []string{cat.ID}}, &edited.UpdatedAt, testActor); err != nil {
+		t.Fatalf("admin edits member public: %v", err)
+	}
+	legacy := uuid.NewString()
+	if err = s.transaction(ctx, func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx, `INSERT INTO cards(id,name,url) VALUES($1,'既有公开','https://example.com')`, legacy); err != nil {
+			return err
+		}
+		_, err := tx.Exec(ctx, `INSERT INTO card_categories(card_id,category_id) VALUES($1,$2)`, legacy, cat.ID)
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
+	historical, err := s.GetCard(ctx, legacy, member)
+	if err != nil {
+		t.Fatal(err)
+	}
+	historical.Name = "越权"
+	if _, err = s.SaveCard(ctx, historical, &historical.UpdatedAt, member); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("member edits legacy public: %v", err)
+	}
+	if err = s.DeleteCard(ctx, edited.ID, member); err != nil {
+		t.Fatalf("owner deletes public: %v", err)
+	}
+}
 func TestConcurrentEdits(t *testing.T) {
 	s := testStore(t)
 	ctx := context.Background()

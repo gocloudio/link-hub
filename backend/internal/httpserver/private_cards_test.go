@@ -158,20 +158,32 @@ func testPrivateCardsAndPreferences(t *testing.T, ctx context.Context, client rp
 	if e != nil || len(pref.Msg.FavoriteCardIds) != 0 {
 		t.Fatal("revoked favorite", e)
 	}
+	// 普通用户可将本人卡片转为内部公开，并保留维护权。
 	input.IsPrivate = false
-	if _, e := client.UpdateCard(ctx, request(&pb.UpdateCardRequest{Id: card.Id, Card: input, ExpectedUpdatedAt: card.UpdatedAt}, "viewer")); connect.CodeOf(e) != connect.CodePermissionDenied {
-		t.Fatal("member published", e)
+	published, e := client.UpdateCard(ctx, request(&pb.UpdateCardRequest{Id: card.Id, Card: input, ExpectedUpdatedAt: card.UpdatedAt}, "viewer"))
+	if e != nil || published.Msg.Card.IsPrivate || published.Msg.Card.OwnerId != identities["viewer"] {
+		t.Fatal("member publish", e)
 	}
-	if _, e := client.CreateCard(ctx, request(&pb.CreateCardRequest{Card: input}, "viewer")); connect.CodeOf(e) != connect.CodePermissionDenied {
+	card = published.Msg.Card
+	// 普通用户也可以直接创建内部公开卡片。
+	input.Name = "Member public"
+	created, e := client.CreateCard(ctx, request(&pb.CreateCardRequest{Card: input}, "viewer"))
+	if e != nil || created.Msg.Card.IsPrivate || !created.Msg.Card.CanEdit {
 		t.Fatal("member created public", e)
 	}
-	published, e := client.UpdateCard(ctx, request(&pb.UpdateCardRequest{Id: card.Id, Card: input, ExpectedUpdatedAt: card.UpdatedAt}, "admin"))
-	if e != nil {
-		t.Fatal("admin publish", e)
+	// 其他成员对他人的公开卡片只读。
+	readonly, e := client.GetCard(ctx, request(&pb.GetCardRequest{Id: card.Id}, "recipient"))
+	if e != nil || readonly.Msg.Card.CanEdit {
+		t.Fatal("public read-only for others", e)
 	}
-	public, e := client.GetCard(ctx, request(&pb.GetCardRequest{Id: card.Id}, "viewer"))
-	if e != nil || public.Msg.Card.CanEdit {
-		t.Fatal("public owner read-only", e)
+	if _, e := client.UpdateCard(ctx, request(&pb.UpdateCardRequest{Id: card.Id, Card: input, ExpectedUpdatedAt: card.UpdatedAt}, "recipient")); connect.CodeOf(e) != connect.CodePermissionDenied {
+		t.Fatal("recipient edits public", e)
+	}
+	if _, e := client.DeleteCard(ctx, request(&pb.DeleteCardRequest{Id: created.Msg.Card.Id}, "recipient")); connect.CodeOf(e) != connect.CodeNotFound {
+		t.Fatal("recipient deletes public", e)
+	}
+	if _, e := client.DeleteCard(ctx, request(&pb.DeleteCardRequest{Id: created.Msg.Card.Id}, "viewer")); e != nil {
+		t.Fatal("owner deletes public", e)
 	}
 	input.IsPrivate = true
 	privatized, e := client.UpdateCard(ctx, request(&pb.UpdateCardRequest{Id: card.Id, Card: input, ExpectedUpdatedAt: published.Msg.Card.UpdatedAt}, "admin"))
